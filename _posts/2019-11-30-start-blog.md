@@ -1,8 +1,8 @@
 ---
 layout: post
 title: "Start-blog"
-description:The reason why I start a blog.
-headline:Let's learn and give it to others who need it.
+description: The reason why I start a blog.
+headline: Let's learn and give it to others who need it.
 modified: 2019-11-30
 category: webdevelopment
 tags: [jekyll]
