@@ -12,7 +12,35 @@ chart:
 comments: true
 ---
 
+This post is for the very beginner.
 
+Linked list is quiet good example to explain struct, pointer and memory.
+
+Let's think about when we stand in line.
+
+[Imgur](https://i.imgur.com/sCP6WZD.jpg)
+
+We usually don't know what order i'm standing in at the front. However we know who stand just in front us.
+Like this, let's guess we are a "NODE", we have two information. First one is the person who stand in front us.
+Second one is a data like height. so we can write code like this
+---
+typedef struct NODE {
+  struct NODE* next; // Point out next struct *memory address* **using pointer( * )**
+  int data; // Store a data like height
+}node; // define this kind of NODE struct as "node"
+---
+
+"struct NODE* next"
+All the data has a memory address to stored.
+*struct NODE next* replaced NODE* cause error because it is trying that define the same struct in the struct.
+To have information for next person, We should point out memory address of next NODE.
+
+[Imgur](https://i.imgur.com/QT6yFfn.jpg)
+
+a woman wearing backpack also has information for next and data.
+
+
+---
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -97,3 +125,6 @@ void printNode(node* head) {
 	}
 	printf("\n");
 }
+---
+
+[Imgur](https://i.imgur.com/gTn2D1R.png)
