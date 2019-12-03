@@ -4,8 +4,8 @@ title: "What's a Linked List"
 description: Explain a linked list.
 headline: Let's find out about a Linked list.
 modified: 2019-12-01
-category: Programming
-tags: [C]
+category: Data-Structure
+tags: [C], [C++]
 imagefeature:
 mathjax:
 chart:

@@ -1,6 +1,6 @@
 title:            Hyeongjun's blog
 description:      "DEVLOG & BLOG"
-logo:             
+logo:
 disqus_shortname: hjun.lee91
 disqus_url : hjun.lee91@gamil.com
 disqus_id : hjun.lee91
@@ -134,6 +134,10 @@ prose:
               value: interesting
             - name: "Web-Development"
               value: webdevelopment
+            - name : "Algorithm"
+              value : Algorithm
+            - name : "Data-Structure"
+              value : Data-Structure
           alterable: true
       - name: "tags"
         field:
