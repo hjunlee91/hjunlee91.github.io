@@ -138,6 +138,8 @@ prose:
               value : Algorithm
             - name : "Data-Structure"
               value : Data-Structure
+            - name : "Operating-System"
+              value : Operating-System
           alterable: true
       - name: "tags"
         field:
