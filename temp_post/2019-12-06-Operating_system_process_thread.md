@@ -16,7 +16,7 @@ What is the Operating System(OS)?<br>
 
 Refer to Wikipedia, [An operating system](https://en.wikipedia.org/wiki/Operating_system)(OS) is system software that manages computer hardware, software resources, and provides common services for computer programs.<br>
 
-![Imgur](os image)
+![Imgur](os image){: width="500" height="500"}
 
 Let's think about Messenger program. **Program** is the executable file set to do some task.<br>
 so the Messenger Program is file set of communication via message.<br>
@@ -30,11 +30,15 @@ You can see the messenger program is running on the list of process.
 Example of **System resoure** are <br>
 1. CPU time.<br>
 2. Memory address to running program.<br>
-3. Region of memory structure composed code, data, stack and heap.<br>
+3. Region of memory structure composed code, data, stack and heap.<br
+
+As beginner, Memory is quiet unfamiliar concept to understand.<br>
+Let's think that computer also has limitation to understand and memorize something because of lack of memory like us.<br>
 
 You might be confused several new concept.<br>
 Let's think about **Ironman**. he need to fight with enemy, run a business and save person at the same time.<br>
-![Imgur](iron man image)
+
+![Imgur](iron man image){: width="500" height="500"}
 
 But he can do only one thing at once so he uses the **Ironman suit** to do all the task very quickly.<br>
 So it looks everything is working at the same time for great effort of him<br>
@@ -43,8 +47,33 @@ Like this, One CPU Operating system shows hallucinations of many process running
 to user with change the caring process quickly.<br>
 How Operating system change the running process very quickly?<br>
 
-Before we click the Messenger program, it is located in **disk memory** like SSD.<br>
+![Imgur](memory speed image){: width="500" height="500"}
+
+Before we click the Messenger program, it is located in **hard disk** like SSD.<br>
 It would be not proper comparing speed simply while Speed of SSD is 500 MB/s, CPU processor speed is 1GHz.<br>
 It means Billions signal traverse the computer in one second.<br>
 
-So it post 
+To overcome the speed difference, we are using **computer memory** like RAM(Random Access memory).<br>
+It is fast but stored information will be vanish when it turns off(we call it as *volatile memory*) <br>
+and it is much expensive than hard disk. <br>
+
+![Imgur](process on the os image){: width="500" height="500"}
+
+So back to process, process is running program on the processor(CPU). <br>
+Process has at least one **thread**(main thread).<br>
+
+Don't worry about it. this is the last new thing to learn in this post :) <br>
+**Thread** is
+1. Smallest sequence of executed instrument that can run using allocated resource from process.<br>
+2. The unit that execute programmed instrument in the process.<br>
+
+![Imgur](threaad on the process iamge){: width="500" height="500"}
+
+We will deep dive on the difference between process and thread later.<br>
+
+To summarize, it would be helpful to understand the concept
+
+Cheers.
+Thank You.
+
+![Imgur](summary of post by example ironman){: width="500" height="500"}
