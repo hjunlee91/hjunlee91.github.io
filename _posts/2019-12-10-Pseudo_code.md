@@ -3,7 +3,7 @@ layout: post
 title: "How to write a Pseudo-Code"
 description: Explain How to write a Pseudo-code
 headline: Understand the pseudo-code
-modified: 2019-12-09
+modified: 2019-12-10
 category: Programming
 tags: [Programming], [Algorithm], [C]
 imagefeature:
@@ -30,7 +30,7 @@ it is methodology to explain the logic to others. Flow charts is graphical metho
 Even though it is not a actual code. We need to think about a few rule to communicate with others.<br>
 For example, if we are trying to get sum of numbers from 1 to 100.<br>
 
-it is simple so we can make it as actual code easily like this.<br>
+It is simple so we can make it as actual code easily like this.<br>
 
 ```c
   int sum = 0;
