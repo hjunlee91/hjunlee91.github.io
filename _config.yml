@@ -140,6 +140,8 @@ prose:
               value : Data-Structure
             - name : "Operating-System"
               value : Operating-System
+            - name : "Programming"
+              value : Programming
           alterable: true
       - name: "tags"
         field:
