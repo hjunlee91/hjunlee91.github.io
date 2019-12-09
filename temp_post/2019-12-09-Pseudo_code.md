@@ -45,6 +45,8 @@ it is simple so we can make it as actual code easily like this.<br>
 We can express this logic as pseudo-code like this.<br>
 
 ```
+PROCEDURE SUM_NUMBER
+
 BEGIN
 SET SUM TO 0
 SET NUMBER TO 1
@@ -61,6 +63,8 @@ END
 If we need to add some logic inside of repeat, we can use the **tap** to make it clear.<br>
 
 ```
+PROCEDURE SUM_NUMBER
+
 BEGIN
 SET SUM TO 0
 SET NUMBER TO 1
@@ -85,16 +89,88 @@ we offer three services to customer. <br>
 2. withdrawal<br>
 3. deposit<br>
 
-Before we offer services we need to heck ATM machine status and PIN number to validate the card.<br>
+Before we offer services we need to heck ATM machine status, card inserted and PIN number to validate the card.<br>
 
-1. checkAvailable<br>
-2. checkPIN<br>
-3. services<br>
+1. checkATMWorks<br>
+2. checkInsertCard<br>
+3. checkPIN<br>
+4. services<br>
 
 ```
-ATM MAIN
+PROCEDURE ATM_MAIN
 BEGIN
   WHILE
-
+    IF checkATMWorks is disabled
+      PRINT TEXT TO "ATM IS NOT AVAILABLE"
+    ELSE
+      IF checkInsertCard is true
+        call checkPIN
+      ELSE
+        PRINT TEXT TO "INSERT CARD"
+      ENDIF
+    ENDIF
   ENDWHILE
 END
+```
+
+Machine must be working and Card should be inserted to validate PIN.<br>
+
+```
+PROCEDURE checkPIN
+BEGIN
+  SET MAXPIN TO 3
+  SET PINCOUNT TO 0
+  STORE THE CardData FROM ReadCard
+  WHILE UNTIL PINCOUNT EQUAL TO MAXPIN
+    INPUT PIN FROM KEYPAD
+    INCREMENT PINCOUNT
+  ENDWHILE
+  IF PIN EQUAL TO CardData.PIN
+    call services
+  THEN
+    PRINT TEXT TO "WRONG PIN"
+    EXIT checkPIN
+  ENDIF
+END
+```
+
+Before offer the services, we need to check the PIN.<br>
+
+```
+PROCEDURE services
+VALUEABLE
+  SET BALANCE AS CardData.BALANCE
+BEGIN
+  INPUT SELECTION FROM KEYPAD
+  CASE OF SELECTION
+    WHEN checkBalance
+      PRINT BALANCE
+    WHEN withdrawal
+      INPUT WITHDRAWAL_MONEY FROM KEYPAD
+      IF WITHDRAWAL_MONEY > BALANCE
+        PRINT TEXT TO "Not enough balance"
+      ELSE
+        WITHDROWAL MONEY
+      ENDIF
+    WHEN deposit
+      INPUT DEPOSIT_MONEY FROM KEYPAD
+      GET INSERTTED_MONEY FROM MACHINE
+      IF INSERTED_MONEY EQUAL TO DEPOSIT_MONEY
+        SET BALANCE AS BALANCE + DEPOSIT_MONEY
+      ELSE
+        RETURN INSERTED_MONEY FROM MACHINE
+      ENDIF
+    DEFAULT
+      RETURN THE CARD TO CUSTOMER
+  ENDCASE
+END
+```
+
+we can check the balance from card data, using this to show the balance and withdrawal.<br>
+
+This is just a example to show how to write a pseudo-code.<br>
+It depends on that who is the audience, what is the pupose etc..<br>
+Write any simple logic as pseudo-code. it would be helpful to understand it<br>
+
+Cheers<br>
+Thank you<br>
