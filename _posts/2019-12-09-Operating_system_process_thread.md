@@ -16,7 +16,7 @@ What is the Operating System(OS)?<br>
 
 Refer to Wikipedia, [An operating system](https://en.wikipedia.org/wiki/Operating_system)(OS) is system software that manages computer hardware, software resources, and provides common services for computer programs.<br>
 
-![Imgur](https://imgur.com/a/jZpGAHt){: width="500" height="500"}
+![Imgur](https://i.imgur.com/tmSnJWB.png){: width="500" height="500"}
 
 Let's think about Messenger program. **Program** is the executable instruction set to do some task.<br>
 so the Messenger Program is file set of communication via message.<br>
@@ -25,7 +25,10 @@ You can see the messenger program is running on the list of process.
 
 **Process** is <br>
 1. Program that running on the OS continuously<br>
-2. Task unit allocated system resources from OS<br>
+2. Task unit allocated *system resources* from OS<br>
+
+Computer have to use finite hardware resources efficiently.<br>
+Operating system distribute finite resources to process according to PCB(Process Control Block)<br>
 
 Example of **System resources** are <br>
 1. CPU time.<br>
@@ -50,8 +53,8 @@ How Operating system change the running process very quickly?<br>
 ![Imgur](https://i.imgur.com/GAWEMgh.png){: width="500" height="500"}
 
 Before we click the Messenger program, it is located in **Hard drive** like SSD.<br>
-It would be not proper comparing speed simply while Speed of SSD is 500 MB/s, CPU processor speed is 1GHz.<br>
-It means Billions signal traverse the computer in one second.<br>
+It would be not proper comparing speed simply while Speed of SSD is 500 MB/s,<br>
+CPU processor speed is 1GHz. It means Billions signal traverse the computer in one second.<br>
 
 To overcome the speed difference, we are using **Computer memory** like RAM(Random Access memory).<br>
 It is fast but stored information will be vanish when it turns off(we call it as *volatile memory*) <br>
@@ -70,7 +73,7 @@ Don't worry about it. this is the last new thing to learn in this post :) <br>
 1. Smallest sequence of executed instrument that can run using allocated resource from process.<br>
 2. The unit that executing programmed instrument in the process.<br>
 
-![Imgur](https://i.imgur.com/XFLONaG.png){: width="500" height="500"}
+![Imgur](https://i.imgur.com/XFLONaG.png){: width="300" height="300"}
 
 We will deep dive on the difference between process and thread later.<br>
 
