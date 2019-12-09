@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Introduction for Operating system, process and thread"
+title: "What is the Operating System(OS)?"
 description: Explain Operating system, process and thread
 headline: Understand the Operating System
 modified: 2019-12-09
@@ -16,7 +16,7 @@ What is the Operating System(OS)?<br>
 
 Refer to Wikipedia, [An operating system](https://en.wikipedia.org/wiki/Operating_system)(OS) is system software that manages computer hardware, software resources, and provides common services for computer programs.<br>
 
-![Imgur](https://i.imgur.com/tmSnJWB.png){: width="500" height="500"}
+![Imgur](https://i.imgur.com/tmSnJWB.png){: width="300" height="300"}
 
 Let's think about Messenger program. **Program** is the executable instruction set to do some task.<br>
 so the Messenger Program is file set of communication via message.<br>
