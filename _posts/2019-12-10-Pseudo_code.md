@@ -5,7 +5,7 @@ description: Explain How to write a Pseudo-code
 headline: Understand the pseudo-code
 modified: 2019-12-10
 category: Programming
-tags: [Programming]
+tags: [Programming][Algorithm]
 imagefeature:
 mathjax:
 chart:
