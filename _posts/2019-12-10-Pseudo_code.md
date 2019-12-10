@@ -5,12 +5,13 @@ description: Explain How to write a Pseudo-code
 headline: Understand the pseudo-code
 modified: 2019-12-10
 category: Programming
-tags: [Programming] [Algorithm] [C]
+tags: [Programming]
 imagefeature:
 mathjax:
 chart:
 comments: true
 ---
+
 How to write a Pseudo-code?<br>
 
 Sometimes we need to explain how it works to other engineer, custormer or project manager. <br>
