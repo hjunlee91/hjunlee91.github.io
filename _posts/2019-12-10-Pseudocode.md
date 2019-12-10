@@ -1,8 +1,8 @@
 ---
 layout: post
-title: "How to write a Pseudo-Code"
-description: Explain How to write a Pseudo-code
-headline: Understand the pseudo-code
+title: "How to write a Pseudocode"
+description: Explain How to write a Pseudocode
+headline: Understand the pseudocode
 modified: 2019-12-10
 category: Programming
 tags: [Programming, Algorithm]
@@ -12,7 +12,7 @@ chart:
 comments: true
 ---
 
-How to write a Pseudo-code?<br>
+How to write a Pseudocode?<br>
 
 Sometimes we need to explain how it works to other engineer, custormer or project manager. <br>
 But most of them is not expert to our area. How do we do explain the logic to them?<br>
@@ -25,8 +25,8 @@ There is three way to explain the logic<br>
 
 **Pseudo** is a prefix that represent "not genuine" "imitating".<br>
 **Pseudo-code** is not actual code but easy to write without programming background and knowledge.<br>
-Actually there is no standard syntax for writing the psuedo-code, Pseudo-code is not an executable program,<br>
-it is methodology to explain the logic to others. Flow charts is graphical method of Pseudo-code.<br>
+Actually there is no standard syntax for writing the psuedocode, Pseudo-code is not an executable program,<br>
+it is methodology to explain the logic to others. Flow charts is graphical method of Pseudocode.<br>
 
 Even though it is not a actual code. We need to think about a few rule to communicate with others.<br>
 For example, if we are trying to get sum of numbers from 1 to 100.<br>
@@ -169,7 +169,7 @@ END
 
 we can check the balance from card data, using this to show the balance and withdrawal.<br>
 
-This is just a example to show how to write a pseudo-code.<br>
+This is just a example to show how to write a pseudocode.<br>
 It depends on that who is the audience, what is the pupose etc..<br>
 Write any simple logic as pseudo-code. it would be helpful to understand it<br>
 

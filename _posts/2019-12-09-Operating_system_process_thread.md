@@ -21,7 +21,7 @@ Refer to Wikipedia, [An operating system](https://en.wikipedia.org/wiki/Operatin
 Let's think about Messenger program. **Program** is the executable instruction set to do some task.<br>
 so the Messenger Program is file set of communication via message.<br>
 If you use window, click any messenger program and ctrl + alt + delete.<br>
-You can see the messenger program is running on the list of process.
+You can see the messenger program is running on the list of process.<br>
 
 **Process** is <br>
 1. Program that running on the OS continuously<br>
@@ -33,7 +33,7 @@ Operating system distribute finite resources to process according to PCB(Process
 Example of **System resources** are <br>
 1. CPU time.<br>
 2. Memory address to running program.<br>
-3. Region of memory structure composed code, data, stack and heap.<br
+3. Region of memory structure composed code, data, stack and heap.<br>
 
 As beginner, Memory is quiet unfamiliar concept to understand.<br>
 Let's think that computer also has limitation to understand and memorize something because of lack of memory like us.<br>
