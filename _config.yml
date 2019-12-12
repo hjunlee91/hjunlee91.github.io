@@ -142,6 +142,8 @@ prose:
               value : Operating-System
             - name : "Programming"
               value : Programming
+            - name : "Network"
+              value : Network
           alterable: true
       - name: "tags"
         field:
