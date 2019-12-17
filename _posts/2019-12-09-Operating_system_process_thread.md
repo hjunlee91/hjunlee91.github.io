@@ -73,7 +73,7 @@ Don't worry about it. this is the last new thing to learn in this post :) <br>
 1. Smallest sequence of executed instrument that can run using allocated resource from process.<br>
 2. The unit that executing programmed instrument in the process.<br>
 
-![Imgur](https://i.imgur.com/XFLONaG.png){: width="300" height="300"}
+![Imgur](https://i.imgur.com/XFLONaG.png){: width="500" height="500"}
 
 We will deep dive on the difference between process and thread later.<br>
 
