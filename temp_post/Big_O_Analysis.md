@@ -15,6 +15,9 @@ What is the Big O Analysis?<br>
 O in the Big O is **Omega**. In programming, time complexity is major issue to optimize the program.<br>
 To compare the efficiency of algorithm, we usually use Big O analysis.<br>
 
+Big O notation usually means worst case except quick sort. in the case of quick sort<br>
+big o notation means average case.<br>
+
 There are two point in Big O notation.<br>
 **First. Ignoring a constant term.**<br>
 We assume that the input data is large enough and the efficiency of algorithm also affect by size of input data.<br>
@@ -29,5 +32,63 @@ If input data is large, Bigest terms only impact on time complexity of algorithm
 So big O notation ignore minor terms.<br>
 ex)<br>
 ```
-O(n^2 + 2n + 1) -> O)(n^2)
+O(n^2 + 2n + 1) -> O(n^2)
+```
+
+![Imgur](https://i.imgur.com/rd2ILUs.jpg)
+
+With mathematical prerequistes, we can compare the time complexity.<br>
+
+**O(1) : constant**<br>
+>Algorithm only take one step to solve the problem.<br>
+>it takes same time without any impact from input data.<br>
+
+**O(logN) : logarithmic**<br>
+>Algorithm divide the problem as small quantity with same size and then solve it.<br>
+>it's proportional to time but the data that we can solve is 2^N.<br>
+>Binary search is a good example.<br>
+
+**O(N) : linear**<br>
+>Algorithm solve the problem linearly.<br>
+>it's directly proprotional.<br>
+>For, linear search are a good example.<br>
+
+**O(NlogN) : log linear**<br>
+>Algorithm divide the problem as small quantity and then merge the result after solve each of them.<br>
+>it's proportional but it would take much more than linear.<br>
+>Quick sort and Merge sort are a good example.<br>
+
+**O(N^2) : quadratic**<br>
+>Algorithm solve the problem using double for statement.<br>
+>if input is large enough, time is increasing exponentailly.<br>
+>This is not a good way to solve the problem.<br>
+>double for statement, insertion sort, bubble sort are a good example.<br>
+
+So let's practice to calculate the big O notation.
+
+```python
+def func(a+b) :
+  return a+b # O(1)
+
+print(func(10+20))
+```
+
+Nonetheless the size of input data, this func works only one time.<br>
+It is definitely O(1). <br>
+
+
+```python
+def func(value) :
+  print(value) # O(1)
+  for i in range(value) :
+    print(i, end=', ') # O(N)
+
+func(10)
+```
+
+print value is happening only one time when the func is called. -> O(1).<br>
+For state has range as value. so time complexity increase proportional -> O(N).<br>
+Big O notation ignore the minor factor.<br>
+```
+O(N) + O(1) -> O(N)
 ```
