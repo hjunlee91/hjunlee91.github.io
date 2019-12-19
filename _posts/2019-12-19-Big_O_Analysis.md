@@ -5,7 +5,7 @@ description: Learn what is the Big O Analysis
 headline: What is the Big O Analysis?
 modified: 2019-12-19
 category: Data-Structure
-tags: [Algorithm], [python]
+tags: [Algorithm, python]
 imagefeature:
 mathjax:
 chart:
