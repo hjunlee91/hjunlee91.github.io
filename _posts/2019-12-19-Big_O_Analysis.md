@@ -15,10 +15,9 @@ What is the Big O Analysis?<br>
 O in the Big O is **Omega**. In programming, time complexity is major issue to optimize the program.<br>
 To compare the efficiency of algorithm, we usually use Big O analysis.<br>
 
-Big O notation usually means worst case except quick sort. in the case of quick sort<br>
-big o notation means average case.<br>
-
-There are two point in Big O notation.<br><br>
+Big O notation usually means worst case except quick sort.<br>
+in the case of quick sort, big o notation means average case.<br>
+There are two point we should know.<br>
 
 **First. Ignoring a constant term.**<br>
 >We assume that the input data is large enough and the efficiency of algorithm also affect by size of input data.<br>
