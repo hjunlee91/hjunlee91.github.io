@@ -18,19 +18,21 @@ Let's take a look step by step. assume the data set is already ascending sorted.
 
 First, Check the middle of data set.<br>
 
-<center> |arr[0]|arr[1]|arr[2]|arr[3]| **arr[4]** |arr[5]|arr[6]|arr[7] </center>
+![Imgur](https://i.imgur.com/XbH7XDx.png){: width="700" height="700"}
 
 Compare middle to target number.<br>.
 
 if the middle is larger than target, we don't need to take care about right side of middle.<br>
 
-<center> |arr[0]|arr[1]|arr[2]|arr[3]| **arr[4]** | </center>
+![Imgur](https://i.imgur.com/0Mqtgdb.png){: width="700" height="700"}
 
 find the middle in the left part.<br>
 
-<center> |arr[0]|arr[1]| **arr[2]** |arr[3]|arr[4]| </center>
+![Imgur](https://i.imgur.com/sfPpExv.png){: width="700" height="700"}
 
 repeat until find the target number.<br>
+
+![Imgur](https://i.imgur.com/0HJW7SA.png){: width="700" height="700"}
 
 we can implement this by two way. using recursive function or while statement.<br>
 
