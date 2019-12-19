@@ -98,9 +98,9 @@ the problem to small quantity<br>
 
 ```python
 def binarySearch (arr, left, right, target):
-    if r >= l;
-        if r >= l:
-            mid = l + (r - l)/2
+    if right >= left:
+        if right >= left:
+            mid = left + (right - left)/2
             if arr[mid] == target:
                 return mid
             elif arr[mid] > target:
@@ -119,6 +119,8 @@ if result != -1:
 else:
     print "Element is not present in array"
 ```
+
+you can see the result using the [IDEONE](https://ideone.com/ideone/Index/submit/)
 
 ![Imgur](https://i.imgur.com/iA8DlQa.png){: width="700" height="700"}
 
