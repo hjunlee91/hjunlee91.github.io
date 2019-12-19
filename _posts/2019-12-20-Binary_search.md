@@ -24,15 +24,15 @@ Compare middle to target number.<br>.
 
 if the middle is larger than target, we don't need to take care about right side of middle.<br>
 
-![Imgur](https://i.imgur.com/0Mqtgdb.png){: width="700" height="700"}
+![Imgur](https://i.imgur.com/uh6rYxM.png){: width="700" height="700"}
 
 find the middle in the left part.<br>
 
-![Imgur](https://i.imgur.com/sfPpExv.png){: width="700" height="700"}
+![Imgur](https://i.imgur.com/NcAFOft.png){: width="700" height="700"}
 
 repeat until find the target number.<br>
 
-![Imgur](https://i.imgur.com/0HJW7SA.png){: width="700" height="700"}
+![Imgur](https://i.imgur.com/dGlV0kO.png){: width="700" height="700"}
 
 we can implement this by two way. using recursive function or while statement.<br>
 
