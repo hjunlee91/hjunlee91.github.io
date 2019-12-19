@@ -3,7 +3,7 @@ layout: post
 title: "What is the Big O Analysis?"
 description: Learn what is the Big O Analysis
 headline: What is the Big O Analysis?
-modified: 2019-01-23
+modified: 2019-12-19
 category: Data-Structure
 tags: [Algorithm], [python]
 imagefeature:
@@ -35,7 +35,7 @@ ex)<br>
 O(n^2 + 2n + 1) -> O(n^2)
 ```
 
-![Imgur](https://i.imgur.com/rd2ILUs.jpg)
+![Imgur](https://i.imgur.com/rd2ILUs.jpg){: width="500" height="500"}
 
 With mathematical prerequistes, we can compare the time complexity.<br>
 
@@ -53,7 +53,7 @@ With mathematical prerequistes, we can compare the time complexity.<br>
 >it's directly proprotional.<br>
 >For, linear search are a good example.<br>
 
-**O(NlogN) : log linear**<br>
+**O(NlogN) : super linear**<br>
 >Algorithm divide the problem as small quantity and then merge the result after solve each of them.<br>
 >it's proportional but it would take much more than linear.<br>
 >Quick sort and Merge sort are a good example.<br>
@@ -92,3 +92,43 @@ Big O notation ignore the minor factor.<br>
 ```
 O(N) + O(1) -> O(N)
 ```
+
+Let's think about binarySearch. To find a target number in the array, binarySearch divide<br>
+the problem to small quantity<br>
+
+```python
+def binarySearch (arr, left, right, target):
+    if r >= l;
+        if r >= l:
+            mid = l + (r - l)/2
+            if arr[mid] == target:
+                return mid
+            elif arr[mid] > target:
+                return binarySearch(arr, left, mid-1, target)
+            else:
+                return binarySearch(arr, mid+1, right, target)
+    else:  
+        return -1
+
+arr = [ 50, 10, 30, 20, 40, 60, 70, 90 ]
+target = 10
+result = binarySearch(arr, 0, len(arr)-1, target)
+
+if result != -1:
+    print "Element is present at index %d" % result
+else:
+    print "Element is not present in array"
+```
+
+![Imgur](https://i.imgur.com/iA8DlQa.png){: width="500" height="500"}
+
+So that's why binarySearch has O(logN).<br>
+the point is divide the problem as smaller one.<br>
+
+like this we can compare the time complexity using Big O analysis.<br>
+Practice to calculate Big O to simple code.<br>
+
+furthur more, **space complexity** is the measure that how algorithm use memory efficiently.<br>
+Developer should develop algorithm considering both complexity.<br>
+
+Thank you.
