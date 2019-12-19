@@ -110,7 +110,7 @@ def binarySearch (arr, left, right, target):
     else:  
         return -1
 
-arr = [ 50, 10, 30, 20, 40, 60, 70, 90 ]
+arr = [ 10, 20, 30, 40, 50, 60, 70, 90 ]
 target = 10
 result = binarySearch(arr, 0, len(arr)-1, target)
 

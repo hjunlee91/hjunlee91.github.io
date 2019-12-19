@@ -5,7 +5,7 @@ description: Learn what is the 2D array
 headline: What is the 2D array?
 modified: 2019-01-23
 category: Data-Structure
-tags: [Algorithm], [python]
+tags: [Algorithm, python]
 imagefeature:
 mathjax:
 chart:
