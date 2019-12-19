@@ -18,17 +18,17 @@ Let's take a look step by step. assume the data set is already ascending sorted.
 
 First, Check the middle of data set.<br>
 
-|arr[0]|arr[1]|arr[2]|arr[3]|**arr[4]**|arr[5]|arr[6]|arr[7]|
+<center> |arr[0]|arr[1]|arr[2]|arr[3]| **arr[4]** |arr[5]|arr[6]|arr[7] </center>
 
-Compare middle to target number.<br.
+Compare middle to target number.<br>.
 
 if the middle is larger than target, we don't need to take care about right side of middle.<br>
 
-|arr[0]|arr[1]|arr[2]|arr[3]|**arr[4]**|
+<center> |arr[0]|arr[1]|arr[2]|arr[3]| **arr[4]** | </center>
 
 find the middle in the left part.<br>
 
-|arr[0]|arr[1]|**arr[2]**|arr[3]|arr[4]|
+<center> |arr[0]|arr[1]| **arr[2]** |arr[3]|arr[4]| </center>
 
 repeat until find the target number.<br>
 
