@@ -18,24 +18,25 @@ To compare the efficiency of algorithm, we usually use Big O analysis.<br>
 Big O notation usually means worst case except quick sort. in the case of quick sort<br>
 big o notation means average case.<br>
 
-There are two point in Big O notation.<br>
+There are two point in Big O notation.<br><br>
+
 **First. Ignoring a constant term.**<br>
-We assume that the input data is large enough and the efficiency of algorithm also affect by size of input data.<br>
-So big O notation ignore a constant term.<br>
-ex)<br>
+>We assume that the input data is large enough and the efficiency of algorithm also affect by size of input data.<br>
+>So big O notation ignore a constant term.<br>
+>ex)<br>
 ```
 O(2n) -> O(n)
 ```
 
 **Second. Ignoring minor terms.**<br>
-If input data is large, Bigest terms only impact on time complexity of algorithm.<br>
-So big O notation ignore minor terms.<br>
-ex)<br>
+>If input data is large, Bigest terms only impact on time complexity of algorithm.<br>
+>So big O notation ignore minor terms.<br>
+>ex)<br>
 ```
 O(n^2 + 2n + 1) -> O(n^2)
 ```
 
-![Imgur](https://i.imgur.com/rd2ILUs.jpg){: width="500" height="500"}
+![Imgur](https://i.imgur.com/rd2ILUs.jpg){: width="700" height="700"}
 
 With mathematical prerequistes, we can compare the time complexity.<br>
 
@@ -120,7 +121,7 @@ else:
     print "Element is not present in array"
 ```
 
-![Imgur](https://i.imgur.com/iA8DlQa.png){: width="500" height="500"}
+![Imgur](https://i.imgur.com/iA8DlQa.png){: width="700" height="700"}
 
 So that's why binarySearch has O(logN).<br>
 the point is divide the problem as smaller one.<br>
