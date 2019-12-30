@@ -41,18 +41,45 @@ def DFS(Node root)
 ```
 
 Python code<br>
+stack<br>
 
 ```Python
+Class Node:
+  def __init__(node, data):
+      node.data = data
+      node.child = []
 
-def DFS(node)
+def dfs(node):
     stack = [node, ]
+    visited = set()
     while True:
         if len(stack) == 0:
             return None
-        node = stack.popup
-        if node == Target:
+        node = stack.pop()
+        print(node.data)
+        if node.data == Target:
             return node
-        children = expand(node)
-        stack.extend = children  
+        if node in visited:
+            continue
+        stack.extend(node.child)
+```
 
+recursive<br>
+
+```Python
+Class Node:
+  def __init__(node, data):
+      node.data = data
+      node.child = []
+      node.visited = False
+
+def dfs(node):
+    if node.visited == True:
+        return
+    print(node.data)
+    node.visited = True
+    if node.data == Target:
+        return node
+    for child in node.child:
+        dfs(child)
 ```
