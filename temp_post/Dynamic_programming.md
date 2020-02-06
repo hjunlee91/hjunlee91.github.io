@@ -20,4 +20,8 @@ As the perspective of Big O Analyze, to solve O(2^n), dynamic programming could 
 
 There are a few famous way of Dynamic programming, let's take a look **Divide and Conquer** first.<br>
 Please remember three simple rule of **Divide and Conquer**<br>
->1. Di
+>1. Divide - breaking down the problem into smaller sub-problem.<br>
+>2. Conquer - solve the smaller sub-problem recursively.<br>
+>3. Combine - combine all the sub-problems a solution to the original problem.<br>
+
+Let's think about Fibonacci sequence<br>
