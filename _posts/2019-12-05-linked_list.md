@@ -16,7 +16,7 @@ This post is for the very beginner.<br>
 Linked list is quiet good example to explain pointer and memory.<br>
 Let's think about when we stand in line.<br>
 
-![linked_list_standinline](hjunlee91.github.io\images\linked_list_standinline.jpg){: width="500" height="500"}
+![linked_list_standinline](\images\linked_list_standinline.jpg){: width="500" height="500"}
 
 We usually don't know what order i'm standing in at the front. However we know who stand just in front us.<br>
 Like this, let's guess we are a "NODE", we have two information.<br>
@@ -36,7 +36,7 @@ All the data has a memory address to stored.<br>
 *struct NODE next* replaced NODE* cause error because it is trying that define the same struct in the struct.<br>
 To have information for next person, We should point out memory address of next NODE.<br>
 
-![linked_list_standinline_data](hjunlee91.github.io\images\linked_list_standinline_data.jpg){: width="500" height="500"}
+![linked_list_standinline_data](\images\linked_list_standinline_data.jpg){: width="500" height="500"}
 
 a woman wearing backpack also has information for next and data.<br>
 From the void, we need to reference point.<br>
@@ -217,4 +217,4 @@ void printNode(node* head) {
 }
 ```
 <br>
-![linked_list_result](hjunlee91.github.io\images\linked_list_result.PNG)
+![linked_list_result](\images\linked_list_result.PNG)
