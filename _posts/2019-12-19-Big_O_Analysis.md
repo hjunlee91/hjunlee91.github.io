@@ -35,7 +35,7 @@ O(2n) -> O(n)
 O(n^2 + 2n + 1) -> O(n^2)
 ```
 
-![Imgur](https://i.imgur.com/rd2ILUs.jpg){: width="700" height="700"}
+![comparing_big_o_function](hjunlee91.github.io\images\comparing_big_o_function.jpeg){: width="700" height="700"}
 
 With mathematical prerequistes, we can compare the time complexity.<br>
 
@@ -122,7 +122,7 @@ else:
 
 you can see the result using the [IDEONE](https://ideone.com/ideone/Index/submit/)
 
-![Imgur](https://i.imgur.com/iA8DlQa.png){: width="700" height="700"}
+![binarySearch](hjunlee91.github.io\images\binarysearch.png){: width="700" height="700"}
 
 So that's why binarySearch has O(logN).<br>
 the point is divide the problem as smaller one.<br>
