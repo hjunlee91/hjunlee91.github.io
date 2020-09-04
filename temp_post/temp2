@@ -1,0 +1,2211 @@
+#include <iostream>
+
+#include "./lib/CctvController.h"
+
+
+// 테스트 대상은 아래 주석과 같이 구현되어 있다. 
+// 필요한 경우 아래 주석의 내용을 참고하여 테스트 입력과 테스트 코드를 작성하시오. 
+// NOTE: 테스트 대상 코드는 빌드에 이미 포함되어 있으니 아래 주석을 해제하여 사용하지 마시오.
+
+// #define NOT_DETECTED (-3000)
+
+/**
+ * MotionDetector class
+ * 센서로 움직임을 감지하여 움직임이 발생한 위치를 가져올 수 있는 드라이버 인터페이스
+ *
+class MotionDetector
+{
+public:
+	/**
+	 * 센서로 움직임을 감지하여 움직임이 발생한 위치를 가져올 수 있는 드라이버 인터페이스
+	 * @return 동작을 감지하여 동작이 발상하면 해당 위치(각도)를, 동작이 감지되지 않은 경우 NOT_DETECTED를 반환한다.
+	 *
+	virtual int detectMovement() = 0;
+};
+
+/**
+ * CctvController class
+ * Cctv를 제어하는 장비 (테스트 대상)
+ *
+class CctvController
+{
+private:
+	MotionDetector& detector_;
+
+public:
+	/**
+	 * Cctv를 제어하는 모듈을 초기화
+	 * 최초 감시 시야각도 범위 : -20도~20도, 오류도 : 0 로 초기화하는 로직이 포함되어 있다.
+	 *
+	CctvController(MotionDetector& detector) : detector_(detector) {...}
+
+	/**
+	 * Cctv를 제어하는 함수. 특정 시간 간격으로 주기적으로 호출된다. (테스트 대상)
+	 * 움직임 감지기에서 감지 위치를 받아 카메라를 이동시키는 제어를 하고 누적 오류도를 계산한다.
+	 * @return 현재까지 누적된 오류도를 반환한다.
+	 *
+	int calculateRangeAndError() 
+	{
+		int detectedDegree = detector_.detectMovement();
+
+		if (detectedDegree == NOT_DETECTED)
+			return errorRate_;
+
+		if (detectedDegree < currentRangeStart_ || currentRangeEnd_ < detectedDegree)
+			return errorRate_;
+
+		int expand_deg = adjustRange(detectedDegree - 10, detectedDegree + 10); // 카메라 각도 조정
+
+		if (expand_deg == 0)
+			errorRate_ += -2;
+		else if (expand_deg <= 3)
+			errorRate_ += 0;
+		else if (expand_deg <= 5)
+			errorRate_ += 2;
+		else if (expand_deg <= 7)
+			errorRate_ += 3;
+		else if (expand_deg <= 9)
+			errorRate_ += 5;
+		else if (expand_deg <= 10)
+			errorRate_ += 7;
+
+		if (errorRate_ > 30)
+			errorRate_ = 30;
+		if (errorRate_ < 0)
+			errorRate_ = 0;
+
+		return errorRate_;
+	}
+
+	...
+
+private:
+	int errorRate_;
+	int currentRangeStart_;
+	int currentRangeEnd_;
+	...
+};
+*/
+
+
+
+/* [문제 1. 작성 내용] */
+// 테스트 케이스를 아래 배열에 추가하시오. (배열의 이름을 임의로 수정하는 경우 채점시 오답 처리됨)
+// 각 테스트 케이스의 구조: { 입력 개수 N, 움직임 발생 방향 각도 1, ... 움직임 발생 방향 각도 N} 형식
+// ( 0 번 요소 : 테스트 케이스의 움직임 발생 요소 갯수
+//			1~ : 움직임 발생 방향 각도. 최소 -90, 최대 90, 현재 CCTV 감시 시야각도 내의 각도로 설정, 그렇지 않으면 ILLEGAL DEGREE 처리 됨)
+//				 만약 해당 시점에서 움직임 발생하지 않은 상황으로 처리할 경우 NOT_DETECTED 상수 사용
+// 예를 들어 testInput이 { 15,-15,NOT_DETECTED,23,11}으로 작성되는 경우,
+// 15, -15, (감지 되지 않음), 23, 11 에서 감지되는 상황을 표현한다. 
+int testInput_example[] = { 5, 15, -15, NOT_DETECTED, 23, 11 }; // 예제 : 5번의 감지 상황 진행 , 15, -15, (감지 되지 않음), 23, 11 상황 - 최종 오류도 -> 7
+
+int testInput_1_1[] = { 23,0,11,15,21,29,39,49,59,69,79,0,0,0,0,0,0,0,0,0,0,0,0,-16 }; // 문제1.(1-1) 최종 오류도가 9가 되는 상황
+int testInput_1_2[] = { 16,0,11,15,21,29,39,49,59,69,79,0,0,0,0,0,-16 }; // 문제2.(1-2) 최종 오류도가 23이 되는 상황  ( '오류도가 0보다 작아질 때' 조건 한번만 발생 , -2만큼 변경되는 조건 6번 사용 )
+int testInput_1_3[] = { 20,0,11,17,25,35,45,55,65,75,0,0,0,0,0,0,0,0,0,-14,-20 }; // 문제3.(1-3) 최종 오류도가 17이 되는 상황  ( 2만큼 변경되는 조건 1번 사용 )
+
+
+// 문제2.
+//int calculateRangeAndError(); 
+
+
+class FakeMoitonDetector : public MotionDetector
+{
+public:
+	FakeMoitonDetector(int* fakeInput) : fakeInput_(fakeInput) {}
+
+	int detectMovement() {
+		return fakeInput_[count_++];
+	}
+
+private:
+	int* fakeInput_;
+	int count_ = 0;
+};
+
+// 문제2. (2-1) 움직임이 다음의 순서대로 방향에서 발생하는 상황 : (15) – (발견 안됨) – (23) – (-18) – (-26)
+void test_2_1(void)
+{
+	int input[] = { 15, NOT_DETECTED, 23, -18, -26 };
+
+	FakeMoitonDetector detector(input);
+	CctvController controller(detector);
+	for (int i = 0; i < 5; ++i)
+		controller.calculateRangeAndError();
+}
+
+// 문제2. (2-2) 움직임이 다음의 순서대로 방향에서 발생하는 상황 : (2) – (-11) – (발견 안됨) – (발견안됨) – (15) – (-21)
+void test_2_2(void)
+{
+	int input[] = { 2, -11, NOT_DETECTED, NOT_DETECTED, 15, -21 };
+
+	FakeMoitonDetector detector(input);
+	CctvController controller(detector);
+	for (int i = 0; i < 6; ++i)
+		controller.calculateRangeAndError();
+}
+
+// main 함수는 작성한 테스트 케이스를 실행하여 확인하는 용도로 사용한다.
+// 필요에 따라서 마음대로 변경하어도 무방하다. main 함수의 내용은 채점과 무관하다.
+int main(void)
+{
+	printTestInputResult("input_example", testInput_example);
+	printTestInputResult("input_1_1", testInput_1_1);
+	printTestInputResult("input_1_2", testInput_1_2);
+	printTestInputResult("input_1_3", testInput_1_3);
+
+	test_2_1();
+
+	test_2_2();
+
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//손님 수
+int P[10000 + 10];//음식 값
+int T[10000 + 10];//예약 희망 시간
+int rev[10000 + 10];//예약 확정 시간
+
+void InputData(){
+	cin >> N;
+	for (int i = 0; i < N; i++){
+		cin >> P[i];
+		cin >> T[i];
+	}
+}
+
+int solve(void){
+	int i, j, price, temp, sum = 0;
+	for(i = 0; i < N; i++){
+		price = P[i];
+		for(j = T[i]; j > 0; j--){
+			if(rev[j] == 0){//예약 없음
+				rev[j] = price;
+				break;
+			}
+			else if(rev[j] < price){
+				temp = price; price = rev[j]; rev[j] = temp;
+			}
+		}
+	}
+	for(i = 1; i <= 10000 ; i++){
+		sum += rev[i];
+	}
+	return sum;
+}
+
+int main(){
+	int ans = -1;
+	InputData();
+	ans = solve();
+	cout << ans << endl;
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//LED 수
+int S[100000 + 10];//LED 상태
+
+int pat[100000 + 10];//초기 ON/OFF 패턴 개수 
+
+void InputData(){
+	cin >> N;
+	for (int i = 0; i < N; i++){
+		cin >> S[i];
+	}
+}
+
+int solve(){
+	int i, max = 0, cnt = 0, seq = 1;
+	for(i = 1; i < N; i++){
+		if(S[i] != S[i - 1]) seq++;
+		else{
+			pat[cnt++] = seq;
+			seq = 1;
+		}
+	}
+	pat[cnt++] = seq;
+	
+	if(cnt < 2){
+		for(i = 0; i < cnt; i++) max += pat[i];
+	}
+	else{
+		max = pat[0] + pat[1] + pat[2];
+		seq = pat[1] + pat[2];
+		for(i = 3; i < cnt; i++){
+			seq += pat[i];
+			if(max < seq) max = seq;
+			seq -= pat[i - 2];
+		}
+	}
+	return max;
+}
+
+int main(){
+	int ans = -1;
+	InputData();
+	ans = solve();
+	cout << ans << endl;
+	return 0;
+}
+
+#include <stdio.h>
+
+#define MAX_LED 20
+
+typedef struct LedConfig_
+{
+	int powerMin;
+	int powerMax;
+	int numOfLED;
+} LedConfig;
+
+typedef struct TestInput_{
+	LedConfig ledConfig;
+	int ledPowers[MAX_LED];
+} TestInput;
+
+/* [작성 내용] */
+/* 1. 테스트 케이스를 아래 배열에 추가하시오. 배열의 이름은 수정 불가함, 디폴트로 주어진 내용도 수정 불가함 */
+/* 2. 테스트 케이스 구조 : { {최소 입력 전력, 최대 입력 전력, LED의 개수 N}, {LED 1의 소비 전력, ..., LED N의 소비 전력} } */
+/*  예를 들어, { {4000,  5000, 5}, {950, 950, 650, 850, 900} }는 최소 입력 전력이 4000, 최대 입력 전력이 5000, LED의 개수가 5개, LED의 소비 전력이 각각 950, 950, 650, 850, 900 임을 의의한다. */
+TestInput testParameters[] = {
+	{ {4000,  5000, 5} , {950, 950, 650, 850, 900 } }, // 테스트용 입력
+	{ {3000,  5000, 8}, { 500, 500, 600, 400, 700, 500, 500, 500 } }, // TODO: 항목 1-1 입력을 추가하시오.
+	{ {5000,  6000, 6}, { 999, 999, 699, 899, 999, 999 } }, // TODO: 항목 1-2 입력을 추가하시오.
+	{ {900,  1100, 6}, { 100, 100, 100, 301, 200, 199 }}, // TODO: 항목 1-3 입력을 추가하시오.
+};
+
+#include "./lib/Check_Condition.h"
+/* 
+* Check_Condition.h 에는 아래 함수의 정의가 있다
+* 
+// 최소 입력 전력, 최대 입력 전력, LED의 개수로 초기화한다.
+void initMachine(int powerMin, int powerMax, int numOfLed);
+
+int checkCondition()
+{
+	int i, sum;
+	int check[5] = { 0, 0, 0, 0, 0 };
+
+	// 각 LED 전력 사용량 입력
+	for (i = 0; i < num_of_LED; i++) {
+		LED_power[LED_count++] = getLEDPower();
+	}
+
+	// 각 LED 전력이 범위를 벗어났는지 확인
+	for (i = 0; i < num_of_LED; i++) {
+		if (LED_power[i] < VALUE_MIN || LED_power[i] > VALUE_MAX) return 0;
+	}
+
+	// 입력 전력 범위를 만족하는지 확인
+	sum = 0;
+	for (i = 0; i < num_of_LED; i++) {
+		sum += LED_power[i];
+	}
+	if (sum < input_power_min || sum > input_power_max) return 0;
+
+	// 전력 불균형 지수 단계 계산
+	for (i = 1; i < num_of_LED; i++) {
+		int diff = LED_power[i - 1] - LED_power[i];
+		if (diff < 0) diff = -diff;
+		if (diff == 0) check[0]++;
+		else if (diff <= 100) check[1]++;
+		else if (diff <= 200) check[2]++;
+		else if (diff <= 300) check[3]++;
+		else check[4]++;
+	}
+
+	// 전력 불균형 지수 단계 중 4단계가 있는지 확인
+	if (check[4] > 0) return 0;
+
+	// 전력 불균형 지수 단계를 모두 포함하는지 확인
+	for (i = 0; i < 4; i++) {
+		if (check[i] == 0) return 0;
+	}
+
+	// 전력 불균형 지수 단계의 합이 한계값을 초과하는지 확인
+	sum = 0;
+	for (i = 1; i < 4; i++) {
+		sum += check[i] * i;
+	}
+	if (sum > INDEX_LIMIT) return 0;
+
+	// 위 조건을 모두 통과하면 테스트 입력 조건을 만족
+	return 1;
+}
+*/
+int currentLed;
+
+int* fakeLEDPowers;
+int getPowerOf(int index)
+{
+	// TODO: 원하는 LED 전력을 전달할 수 있도록 fake/stub을 구현하시오.
+	return fakeLEDPowers[currentLed++];
+}
+
+void test_2_1(void)
+{
+	// TODO: 항목 2-1. 
+	// 최소 입력 전력, 최대 입력 전력, LED의 개수가 각각 3000, 4000, 5 이고 LED들의 소비 전력이 300, 400, 400, 600, 300 인 경우를 재현하는 코드를 작성하시오.
+	int inputPowers[] = { 300, 400, 400, 600, 300 };
+	currentLed = 0;
+	fakeLEDPowers = inputPowers;
+
+	initMachine(3000, 4000, 5);
+
+	checkCondition();
+}
+
+void test_2_2(void)
+{
+	// TODO: 항목 2-2. 
+	// 최소 입력 전력, 최대 입력 전력, LED의 개수가 각각 1000, 2000, 6 이고 LED들의 소비 전력이 200, 300, 100, 50, 400, 300 인 경우를 재현하는 코드를 작성하시오.
+	int inputPowers[] = { 200, 300, 100, 50, 400, 300 };
+	currentLed = 0;
+	fakeLEDPowers = inputPowers;
+
+	initMachine(1000, 2000, 6);
+
+	checkCondition();
+}
+
+int main(void)
+{
+	printTestResults();
+	test_2_1();
+	test_2_2();
+	
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//건물 수
+int H[80010];//건물 높이
+
+int stack[80010];
+
+void Input_Data(void){
+	cin >> N;
+	for (int i = 0; i < N; i++){
+		cin >> H[i];
+	}
+}
+
+long long solve(){
+	int sp = 0;
+	long long sum = 0;
+	for(int i=0; i<N ; i++){
+		while(sp > 0){
+			if(H[i] < stack[sp]) break;
+			sp--;
+		}
+		sum += sp;
+		stack[++sp] = H[i];
+	}
+	return sum;
+}
+
+int main(){
+	long long ans = -1;
+	Input_Data();
+	ans = solve();
+	cout << ans << endl;
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//테스트 케이스 수
+int B;//진법
+char S[110];//첫 번째 정수
+char D[110];//두 번째 정수
+
+char d2c[]="0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+int c2d(char ch){
+	if(ch <= '9') return ch - '0';
+	return ch - 'A' + 10;
+}
+int conv(int *dst, char *src){
+	int i;
+	for(i = 0; src[i]; i++) dst[i] = c2d(src[i]);
+	return i;
+}
+void mul(char *s, char *d){
+	int S[110], D[110], sol[210] = {0};
+	int slen = conv(S, s), dlen = conv(D, d), len = slen + dlen - 1, i, j;
+	for(i = 0; i < slen; i++){
+		for(j = 0; j < dlen; j++){
+			sol[i + j] += S[i] * D[j];
+		}
+	}
+	for(i = len - 1; i > 0; i--){
+		if(sol[i] >= B){
+			sol[i - 1] += sol[i] / B; sol[i] %= B;
+		}
+	}
+	if(sol[0] >= B){
+		cout << d2c[sol[0] / B]; sol[0] %= B;
+	}
+	for(i = 0; i < len; i++) cout << d2c[sol[i]];
+	cout << endl;
+}
+void solve(){
+	if((S[0] == '0') || (D[0] == '0')) {
+		printf("0\n"); return;
+	}
+	int sign = 1; char *s = S, *d = D;
+	if(S[0] == '-'){ sign *= -1; s++; }
+	if(D[0] == '-'){ sign *= -1; d++; }
+	if(sign < 0) printf("-");
+	mul(s, d);
+}
+void InputData(){
+	cin >> B >> S >> D;
+}
+int main(){
+	int i;
+	scanf("%d", &N);
+	for(i = 0; i < N; i++){
+		InputData();//입력 함수
+		//	코드를 작성하세요
+		solve();
+	}
+	return 0;
+}
+
+
+/* [작성 내용] */
+/* 1. 테스트 케이스를 아래 배열에 추가하시오 개수는 8개 고정. 배열의 이름은 수정 불가함 */
+/* 2. 테스트 케이스 배열 구조 : { 미세먼지측정값1, ..., 미세먼지측정값8 } */
+/* 예를 들어, { 101, 101, 100, 50, 30, 51, 75, 100 }는 */
+/* 미세먼지측정값이 101, 101, 100, 50, 30, 51, 75, 100 순으로 감지됨을 의미한다. */
+int testInput_example[8] = { 101, 101, 100, 50, 30, 51, 75, 100 };
+
+int testInput_1_1[8] = { 30, 50, 60, 110, 60, 110, 60, 110/*[FIXME]*/, }; // TODO: 항목 1-1 테스트 입력을 추가하시오.
+int testInput_1_2[8] = { 30, 50, 60, 60, 110, 110, 60, 40/*[FIXME]*/, }; // TODO: 항목 1-2 테스트 입력을 추가하시오.
+int testInput_1_3[8] = { 30, 110, 50, 50, 110, 110, 60, 110/*[FIXME]*/, }; // TODO: 항목 1-3 테스트 입력을 추가하시오.
+
+
+
+
+#include "./lib/AirPurifier.h"
+
+/*
+ * 아래는 테스트 대상인 AirPurifier class와 관련 interface 코드이다.
+ * 구현 참고용이므로 본 주석을 풀어서 아래 코드를 사용해서는 안된다.  (AirPurifier.h에 포함된 내용임)
+ * 아래 주석을 해제하여 사용하는 경우 정상적으로 동작하지 않는다.
+
+class Sensor
+{
+public:
+	/*
+	 *  현재 센서에서 감지한 미세먼지 측정값을 반환하는 인터페이스
+	 *
+	virtual int getCurrentPM() = 0;
+};
+
+class AirPurifier
+{
+public:
+	AirPurifier(Sensor& sensor) : sensor_(sensor) { ... }
+
+	/*
+	 * 바람 세기와 누적 부하량 계산하여 결정한 바람 세기를 반환 (테스트 대상)
+	 *
+	int determineWindStrength()
+	{
+		int pm = sensor_.getCurrentPM();
+
+		int polutionLevel = mapToPolutionLevel(pm); // 미세먼지량에_따른_오염도
+		int result = mapToWindStrength(polutionLevel); // 오염도에_따른_바람세기
+	
+		if (isTurboModeBeginCondition(polutionLevel))
+			turboMode_ = true;
+		else if (isTurboModeEndCondition(polutionLevel))
+			turboMode_ = false;
+		
+		if (turboMode_)
+			result = TURBO_MODE;
+	
+		totalLoad_ += getLoadOf(result); // 바람 세기에 따른 부하량을 계산하여 누적
+		
+		return result;
+	}
+
+	...
+
+private:
+	Sensor& sensor_;
+	int totalLoad_;
+	bool turboMode_;
+	...
+};
+*/
+
+
+
+class FakeSensor : public Sensor
+{
+	int* fakePM;
+	int count = 0;
+public:
+	FakeSensor(int* input) : fakePM(input) {}
+
+	int getCurrentPM() {
+		return fakePM[count++];
+	}
+};
+
+void test_2_1()
+{
+	// TODO: 항목 2-1. 
+	// 미세 먼지 단계가 (매우 나쁨, 매우 나쁨, 나쁨, 보통, 나쁨, 나쁨, 나쁨) 순으로 7개가 감지되는 경우를 재현하는 코드를 작성하라.
+	int fakeInputs[] = {111, 111, 70, 40, 70, 70, 70};
+	FakeSensor fakeSensor(fakeInputs);
+	AirPurifier device(fakeSensor);
+
+	for (int i = 0; i < 7; ++i)
+		device.determineWindStrength();
+}
+
+void test_2_2()
+{
+	// TODO: 항목 2-2. 
+	// 세 먼지 단계가 (매우 나쁨, 나쁨, 나쁨, 매우 나쁨, 나쁨, 좋음, 나쁨, 매우 나쁨, 나쁨, 매우 나쁨, 나쁨) 순으로 11개가 감지되는 경우를 재현하는 코드를 작성하라.
+	int fakeInputs[] = { 111, 70, 70, 110, 70, 10, 70, 170, 70, 110, 70 };
+	//int fakeInputs[] = { 111, 70, 70, 70, 110, 10, 70, 170, 70, 110, 70 };  // 이제 정답 처리되는 문제가 있었음
+	FakeSensor fakeSensor(fakeInputs);
+	AirPurifier device(fakeSensor);
+
+	for (int i = 0; i < 11; ++i)
+		device.determineWindStrength();
+}
+
+
+/* main 함수는 작성한 테스트 케이스 검증용임 */
+/* 필요에 따라서 마음대로 변경하어도 무방함 */
+/* main 함수는 채점과 무관함 */
+
+
+int main()
+{
+	printTestResults();  // testInput에 기록한 테스트 입력으로 실행한 결과를 출력해준다. (수험자 확인용)
+
+	test_2_1();
+
+	test_2_2();
+
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//직원 수
+int M;//기부금 총액
+int A[1000010];//직원 별 성과급
+int input_data(){
+	int i, max = 0;
+	cin >> N >> M;
+	for (i = 0; i < N; i++){
+		cin >> A[i];
+		if (max < A[i]) max = A[i];
+	}
+	return max;
+}
+int check(int h){
+	int i, sum = M;
+	for (i = 0; i < N; i++){
+		if (h < A[i]) {
+			sum -= A[i] - h;
+			if (sum <= 0) return 1;
+		}
+	}
+	return 0;
+}
+int solve(int max){
+	int s = 0, e = max, m, sol = 0;
+	while (s <= e){
+		m = (s + e) / 2;
+		if (check(m) == 1){
+			sol = m; s = m + 1;
+		}
+		else e = m - 1;
+	}
+	return sol;
+}
+int main(){
+	int max = input_data();
+	int ans = solve(max);
+	cout << ans << endl;
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//지도 크기
+char map[110][110];//지도 정보
+
+#define IMP (1<<29)
+struct Q{
+	int r, c;
+};
+Q queue[100*100*100];
+int wp, rp;
+int visit[110][110];
+
+void Input_Data(){
+	cin >> N;
+	for (int i = 0; i < N; i++){
+		cin >> map[i];
+	}
+}
+
+int BFS(){
+	int rr[] = {-1, 1, 0, 0};
+	int cc[] = {0, 0, -1, 1};
+
+	for(int i=0;i<N;i++){
+		for(int j=0;j<N;j++){
+			visit[i][j] = IMP;
+		}
+	}
+	wp = rp = 0;
+	queue[wp].r=0; queue[wp++].c=0;
+	visit[0][0] = 0;
+
+	while(rp < wp){
+		Q d = queue[rp++];
+		for(int i=0;i<4;i++){
+			int nr = d.r + rr[i]; int nc = d.c + cc[i];
+			if((nr<0)||(nr>=N)||(nc<0)||(nc>=N)) continue;//범위 벗어남
+			if(visit[nr][nc] > visit[d.r][d.c] + map[nr][nc] - '0'){
+				visit[nr][nc] = visit[d.r][d.c] + map[nr][nc] - '0';
+				queue[wp].r = nr; queue[wp++].c = nc;
+			}
+		}
+	}
+	return visit[N-1][N-1];
+}
+
+int main(){
+	int ans = -1;
+	Input_Data();
+	ans = BFS();
+	cout << ans << endl;
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//버섯 수
+int P[150000 + 10];//버섯 값
+
+void InputData(){
+	cin >> N;
+	for (int i = 0; i < N; i++){
+		cin >> P[i];
+	}
+}
+
+int solve(){
+	int sum = P[0];
+	for(int i = 1; i < N; i++){
+		if(P[i - 1] < P[i]) sum = sum - P[i - 1] + P[i];
+	}
+	return sum;
+}
+
+int main(){
+	int ans = -1;
+	InputData();
+	ans = solve();
+	cout << ans << endl;
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N, M;//공장 수, 도로 정보 수
+int A[5000], B[5000], D[5000];//공장 A, 공장 B, 거리 D
+
+#define IMP (100 * 100 + 10)
+#define MAXQ (100 * 100 * 100)
+int dist[110][110];
+int visit[110];
+int queue[MAXQ];
+int wp, rp;
+void push(int n, int t){
+	if(visit[n] <= t) return;
+	visit[n] = t; queue[wp++] = n;
+}
+int front(){ return queue[rp];}
+void pop() { rp++;}
+bool empty() {return wp == rp;}
+int BFS(int s){
+	int i, tmp,  max = 0;
+	for (i = 1; i <= N; i++) visit[i] = IMP;
+	wp = rp =0;
+	push(s, 0);
+	while(!empty()){
+		tmp = front(); pop();
+		for(i = 1; i <= N; i++){
+			push(i, visit[tmp] + dist[tmp][i]);
+		}
+	}
+	for (i = 1; i <= N; i++) if(max < visit[i]) max = visit[i];
+	return max;
+}
+int solve(){
+	int i, j, sol = IMP, ret;
+	for(i = 1; i <= N; i++){
+		for(j = 1; j <= N; j++){
+			dist[i][j] = IMP;
+		}
+	}
+	for (i = 0; i < M; i++) dist[A[i]][B[i]] = dist[B[i]][A[i]] = D[i];
+	for(i = 1; i <= N; i++){
+		ret = BFS(i);
+		if(sol > ret) sol = ret;
+	}
+	return sol;
+}
+void InputData(){
+	int i;
+	cin >> N >> M;
+	for (i = 0; i < M; i++){
+		cin >> A[i] >> B[i] >> D[i];
+	}
+}
+int main(){
+	int ans = -1;
+	InputData();//	입력 함수
+	//	코드를 작성하세요
+	ans = solve();
+	cout << ans << endl;//	정답 출력
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//보내려는 물품 개수
+int C[10];//BOX 개수(1, 5, 10, 50, 100, 500, 1000, 3000, 6000, 12000 순)
+int sol[10];//보내는 BOX 개수
+
+int num[10] = {1, 5, 10, 50, 100, 500, 1000, 3000, 6000, 12000 };
+int solve(){
+	int sum = 0, i, cnt, totalcnt = 0;
+	for(i = 0; i < 10; i++){
+		sum += num[i] * C[i];
+	}
+	sum -= N;
+
+	for(i = 9; i >= 0; i--){
+		cnt = sum / num[i];
+		if(cnt > C[i]) cnt = C[i];
+		sum -= num[i] * cnt;
+		sol[i] = C[i] - cnt;
+		totalcnt += sol[i];
+	}
+	return totalcnt;
+}
+
+void InputData(){
+	int i;
+	cin >> N;
+	for(i = 0; i < 10; i++){
+		cin >> C[i];
+	}
+}
+void OutputData(int ans){
+	int i;
+	cout << ans << endl;
+	for(i = 0; i < 10; i++){
+		cout << sol[i] << " ";
+	}
+	cout << endl;
+}
+int main(){
+	int ans = -1;
+
+	InputData();//	입력 함수
+    
+	//	코드를 작성하세요
+	ans = solve();
+
+	OutputData(ans);//	출력 함수
+
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//직원 수
+int T;//산책 시간(분단위)
+int P[100000 + 10];//직원 출발 위치
+int S[100000 + 10];//직원 산책 속도(분당)
+
+long long stack[100000 + 10];
+
+void InputData(){
+	cin >> N >> T;
+	for (int i = 0; i < N; i++){
+		cin >> P[i] >> S[i];
+	}
+}
+
+int solve(){
+	int i, sp = 0;
+	long long pos;
+	for(i = 0; i < N; i++){
+		pos = P[i] + (long long)T * S[i];
+		for( ; (sp > 0) && (stack[sp] >= pos) ; sp--);
+		stack[++sp] = pos;
+	}
+	return sp;
+}
+
+int main(){
+	int ans = -1;
+	InputData();
+	ans = solve();
+	cout << ans << endl;
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//제품 수
+struct st{
+	int X, ID;//위치, 아이디
+};
+st A[50010];
+
+st tmp[50010];
+int nid[50010];
+int check[50010];
+int max_id_cnt;
+
+void InputData(){
+	cin >> N;
+	for (int i = 0; i < N; i++){
+		cin >> A[i].X >> A[i].ID;
+	}
+}
+
+void new_id(){
+	for(int i=0;i<N;i++){
+		int ni = A[i].ID % 50000;
+		for(int j=0;j<50000;j++){
+			if(check[ni] == 0){
+				max_id_cnt++;
+				check[ni] = A[i].ID;
+				A[i].ID = ni;
+				break;
+			}
+			else if(check[ni] == A[i].ID){
+				A[i].ID = ni;
+				break;
+			}
+			ni = (ni + 1) % 50000;
+		}
+	}
+}
+
+void sort(int s, int e){
+	if(s >= e) return;
+	int i=s,k=s,m=(s+e)/2, j=m+1;
+	sort(s, m); sort(j, e);
+	while((i<=m) && (j<=e)){
+		if(A[i].X > A[j].X) tmp[k++] = A[j++];
+		else tmp[k++] = A[i++];
+	}
+	while(i<=m) tmp[k++] = A[i++];
+	while(j<=e) tmp[k++] = A[j++];
+	for(i=s;i<=e;i++) A[i] = tmp[i];
+}
+
+int solve(){
+	int i, j, cnt = 0, min = 1<<30;
+	new_id();
+	sort(0, N-1);
+	for(i=0;i<50000;i++) check[i] = 0;
+	i=j=0;
+	for(;;){
+		while((i<N) && (max_id_cnt > cnt)){
+			if(check[A[i].ID]++ == 0) cnt++;
+			i++;
+		}
+		if(max_id_cnt != cnt) break;
+		while(check[A[j].ID]>1){
+			check[A[j].ID]--; j++;
+		}
+		if(min > A[i-1].X - A[j].X) min = A[i-1].X - A[j].X;
+		cnt--; check[A[j].ID]=0; j++;
+	}
+	return min;
+}
+
+int main(){
+	int ans = -1;
+	InputData();
+	ans = solve();
+	cout << ans << endl;
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+#define MIN(x,y) ((x)<(y)?(x):(y))
+int y[110];		//	살균대상의 y 좌표 배열
+int x[110];		//	살균대상의 x 좌표 배열
+int N;				//	필터 한 변의 크기
+int L;				//	LED의 범위(길이) 
+int M;				//	살균대상의 개수
+int sol;			//	정답
+
+void Input(void){
+	cin >> N >> L >> M;
+	for (int i = 0; i < M; i++)		cin >> y[i] >> x[i];
+}
+
+int main(void){
+	int i, j, k, si, sj, t, h, w;
+	
+	Input();
+
+	for (h = 1; h < L / 2; h++){		//	세로길의의 범위 루프
+		w = L / 2 - h;							//	세로길이에 따른 가로길이 연산
+		for (i = 0; i < M; i++){			//	가능한 살균대상의 모든 조합
+			for (j = i; j < M; j++){
+				t = 0;
+				si = MIN(y[i], y[j]);		//	살균범위의 시작 y, x좌표 계산
+				sj = MIN(x[i], x[j]);
+				for (k = 0; k < M; k++){
+					//	살균범위내에 살균대상이 있을경우 카운트 증가)
+					if (si <= y[k] && y[k] <= si + h && sj <= x[k] && x[k] <= sj + w)   t++;
+				}
+				if (sol < t) sol = t;			//	현재 최대값보다 클 경우 정답 갱신
+			}
+		}
+	}
+
+	//	정답출력
+	printf("%d", sol);
+
+	return 0;
+}
+
+#include <iostream>
+
+/* [문제 1. 작성 내용] */
+/*
+	조건을 만족하는 테스트 입력을 아래 배열에 추가하시오. (배열의 이름을 임의로 수정하는 경우 채점시 오답 처리됨)
+
+	각 테스트 케이스의 형식: { 입력 개수 N, 이벤트 1, 이벤트 2, ... ,  이벤트 N}
+	단, 입력 개수 N은 20이하이고, 이벤트 1은 반드시 고정값 4 이어야 한다.
+	예를 들어, { 10, 4, 5, 6, 7, 3, -7, -6, 2, -5, -2 }는
+	이벤트가 4, 5, 6, 7, 3, -7, -6, 2, -5, -2 순으로 발생함을 의미한다.
+*/
+
+/*
+	이벤트가 4, 5, 6, 7, 3, -7, -6, 2, -5, -2 순으로 발생해서
+	점유레벨이 5 2 2 1 1 2 2 2 3 4 순으로 변하는 테스트 입력 예
+*/
+int testInput_example[] = { 10, 4, 5, 6, 7, 3, -7, -6, 2, -5, -2 };
+
+
+/*
+TODO: 문제1-1
+  - 4번 프로세스의 CPU 점유레벨 3이 연속으로 3초 이상 나오는 상황
+*/
+int testInput_1_1[] = { 10 + 6,  4, 5, 6, 7, 3, -7, -6, 2, -5, -2,
+												   -3, 1, 2, 3, -3, 3 };
+
+/*
+TODO: 문제1-2
+  - 4번 프로세스의 CPU 점유레벨 변화의 일부가 5, 4, 3 순으로 나오는 상황
+  - 단, 값이 연속으로 동일한 경우 하나의 값으로 본다.
+  - 예를 들어 4, 5, 4, 4, 4, 3, 2, 2, 1, 2 와 같이 나온 경우 연속으로 동일한 값을 제거하면 4, 5, 4, 3, 2, 1, 2 가 되며 중간에 5, 4, 3 이 존재하므로 가능한 경우이다.
+*/
+int testInput_1_2[] = { 10 + 6,  4, 5, 6, 7, 3, -7, -6, 2, -5, -2,
+												   -3, 1, 2, 3, -3, 3 };
+/*
+TODO: 문제1-1
+  - 4번 프로세스의 CPU 점유레벨 변화의 일부가 3, 4, 5 순으로 나오는 상황
+  - (1-2)와 마찬가지로 값이 연속으로 동일한 경우 하나의 값으로 처리해야 한다.
+*/
+int testInput_1_3[] = { 10 + 6,  4, 5, 6, 7, 3, -7, -6, 2, -5, -2,
+												   -3, 1, 2, 3, -3, 3 };
+
+
+#include "./lib/Scheduler.h"
+
+// 테스트 대상은 아래 주석과 같이 구현되어 있다. 
+// 필요한 경우 아래 주석의 내용을 참고하여 테스트 코드를 작성하시오.
+/*
+ * 구현 참고용이므로 본 주석을 풀어서 아래 코드를 사용해서는 안된다.  (Scheduler.h에 포함된 내용임)
+ * 아래 주석을 해제하여 사용하는 경우 정상적으로 동작하지 않는다.
+
+/*
+ * EventHelper class
+ * 프로세스 실행과 종료 등의 이벤트 정보를 얻을 수 있는 인터페이스
+ *
+
+class EventHelper
+{
+public:
+	/*
+	 * 호출 시 최근에 발생한 이벤트를 반환한다.
+	 * @return 발생한 프로세스 이벤트를 표현하는 값
+	 *
+	virtual int getProcessEvent() = 0;
+};
+
+
+/**
+ * Scheduler class
+ * 프로세스 스케줄링을 담당하는 모듈 (테스트 대상)
+ *
+class Scheduler
+{
+public:
+	/*
+	 * 프로세스 스케줄러 모듈을 초기화
+	 * 프로세스 상태 등 관련 값들을 모두 초기화 한다
+	 * (해당 로직에서 사용하는 변수는 아래 생성자에서 초기화 됨을 가정한다.)
+	 *
+	Scheduler(EventHelper& helper) : helper_(helper) {
+		... 초기화 코드
+	}
+
+	/**
+	 * 현재 수행해야 하는 이벤트에 따라 해당 프로세스를 실행 또는 종료시키고, 4번 프로세스의 CPU 점유율과 점유레벨을 계산한다. (테스트 대상)
+	 * @return 처리에 성공하면 true, 예외 조건으로 실패하면 false
+	 *
+	bool operateScheduler()
+	{
+		event = helper_.getProcessEvent() // 발생한 이벤트
+
+		첫 이벤트가 4가 아니면 에러를 리턴
+
+		if 이벤트가_음수 then
+			프로세스 번호 = 이벤트의 절대값
+			현재 동일한 번호의 프로세스가 없을 시 에러를 리턴
+			해당 번호의 프로세스 종료
+		else
+			프로세스 번호 = 이벤트값
+			현재 동일한 번호의 프로세스가 있을 시 에러를 리턴
+			해당 번호의 프로세스 실행
+
+		ratio = 4번 프로세스의 CPU 점유율을 계산
+		level = 4번 프로세스의 CPU 점유레벨을 계산
+
+		이벤트에 따라 변경되는 level을 계산하여 상태 기록
+	}
+
+	...
+
+};
+*/
+
+
+
+
+// [문제2. 테스트 코드 작성]
+// NOTE: 작성한 코드가 실행된 후 메모리 누수가 발생할 경우 오답 처리됨
+
+namespace
+{
+	class FakeEventHelper : public EventHelper
+	{
+	public:
+		FakeEventHelper(int* inputs) : inputs_(inputs) {}
+
+		int getProcessEvent()
+		{
+			return inputs_[count_++];
+		}
+
+	private:
+		int* inputs_;
+		int count_ = 0;
+	};
+}
+
+void test_2_1()
+{
+	// TODO: 항목 2-1. 
+	// 이벤트가 순차적으로 4, 5, 6, 3, 2, -5, -6, -3, -2 순으로 발생하는 경우를 재현하는 코드를 작성하라.
+	// 단, 채점 시 test_2_1()만 호출되므로, test_2_1()을 호출했을 때 필요한 테스트 동작이 모두 수행될 수 있도록 작성해야 한다.
+	int fakeInputs[] = { 4, 5, 6, 3, 2, -5, -6, -3, -2 };
+	FakeEventHelper helper(fakeInputs);
+	Scheduler scheduler(helper);
+
+	for(int i = 0; i < 9; ++i)
+		scheduler.operateScheduler();
+}
+
+void test_2_2()
+{
+	// TODO: 항목 2-2. 
+	// 이벤트가 순차적으로 4, 3, 2, -2, 5, -5, 6, 7, -7, -3, -6 순으로 발생하는 경우를 재현하는 코드를 작성하라.
+	// 단, 채점 시 test_2_2()만 호출되므로, test_2_2()을 호출했을 때 필요한 테스트 동작이 모두 수행될 수 있도록 작성해야 한다.
+	int fakeInputs[] = { 4, 3, 2, -2, 5, -5, 6, 7, -7, -3, -6 };
+	FakeEventHelper helper(fakeInputs);
+	Scheduler scheduler(helper);
+
+	for (int i = 0; i < 11; ++i)
+		scheduler.operateScheduler();
+}
+
+
+
+
+// 아래 main 함수는 작성한 테스트 케이스를 실행하여 확인하는 용도로 사용할 수 있다. (필요에 따라서 마음대로 변경하어도 무방)
+// NOTE: main 함수의 내용은 채점시 활용되지 않으므로 동작에 꼭 필요한 코드를 main 함수에만 작성해서는 안된다.
+int main(void)
+{
+	printTestInputResult("input_example", testInput_example);
+	printTestInputResult("input_1_1", testInput_1_1);
+	printTestInputResult("input_1_2", testInput_1_2);
+	printTestInputResult("input_1_3", testInput_1_3);
+
+	test_2_1();
+
+	test_2_2();
+
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//정사각형 지도 크기
+int X, Y;//수돗물 공급되는 시작 좌표, 가로, 세로
+int map[20][20];//지도 정보
+
+//방문순서 상하좌우
+int A[][4] = {	{0,0,0,0},//0
+				{0,0,1,1},//1
+				{1,1,0,0},//2
+				{0,1,0,1},//3
+				{0,1,1,0},//4
+				{1,0,1,0},//5
+				{1,0,0,1},//6
+				{1,1,0,1},//7
+				{0,1,1,1},//8
+				{1,1,1,0},//9
+				{1,0,1,1},//10
+				{1,1,1,1}};//11
+int dir[] = {1, 0, 3, 2};
+int rr[] = {-1, 1, 0, 0};
+int cc[] = {0, 0, -1, 1};
+int visit[20][20];
+int pipe;
+
+void Input_Data(){
+	char str[20];
+	cin >> N;
+	cin >> X >> Y;
+	for (int i = 0; i < N; i++){
+		cin >> str;
+		for(int j = 0; j < N; j++){
+			if(str[j] < 'A') map[i][j] = str[j] - '0';
+			else map[i][j] = str[j] - 'A' + 10;
+		}
+	}
+}
+
+void Flood_Fill(int r, int c){
+	visit[r][c]=1;//방문표시
+	pipe--;//확산왔으므로 파이프제거
+
+	for(int i=0 ; i<4 ; i++){
+		int nr = r + rr[i]; int nc = c + cc[i];
+		if((nr<0) || (nr>=N) || (nc<0) || (nr>=N)) continue;//범위 벗어남
+		if(visit[nr][nc] == 1) continue;//이미 방문했으므로 skip
+		if((A[map[r][c]][i] == 1) && (A[map[nr][nc]][dir[i]] == 1)){//방문가능
+			Flood_Fill(nr, nc);
+		}
+	}
+}
+
+int solve(){
+	pipe = 0;
+	for(int i=0;i<N;i++){
+		for(int j=0;j<N;j++){
+			if(map[i][j] != 0) pipe++;//파이프 개수 파악
+		}
+	}
+
+	Flood_Fill(Y, X);
+	return pipe;
+}
+
+int main(){
+	int ans = -1;
+	Input_Data();
+	ans = solve();
+	cout << ans << endl;
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//후보자 수
+int A[100000 + 10];//기질 값
+
+void InputData(){
+    cin >> N;
+    for (int i = 0; i < N; i++) cin >> A[i];
+}
+
+int ABS(int x){ return (x < 0) ? -x : x; }
+
+void solve(){
+    int i = 0, j = N - 1, minsum = (int)(2e9 + 10), sum, minans, maxans;
+    while (i < j){
+        sum = A[i] + A[j];
+        if (minsum > ABS(sum)){
+            minsum = ABS(sum); minans = i; maxans = j;
+        }
+        if (sum > 0) j--;
+        else if (sum < 0) i++;
+        else break;
+    }
+    cout << minans << " " << maxans << endl;
+}
+
+int main(){
+    InputData();
+    solve();
+    return 0;
+}
+
+
+
+#include "./lib/ControlSystem.h"
+
+// 테스트 대상은 아래 주석과 같이 구현되어 있다. 
+// 필요한 경우 아래 주석의 내용을 참고하여 테스트 입력과 테스트 코드를 작성하시오. 
+// NOTE: 테스트 대상 코드는 빌드에 이미 포함되어 있으니 아래 주석을 해제하여 사용하지 마시오.
+
+/**
+ * TemperatureSensor interface
+ * 감지된 온도 변화 값을 가져올 수 있는 장치 인터페이스
+ *
+class TemperatureSensor
+{
+public:
+	/**
+	 * 센서가 감지한 온도 변화 값을 반환한다.
+	 * @return 감지된 온도 변화 값
+	 *
+	virtual int getTemperatureChange() = 0;
+};
+*/
+
+/**
+ * 엔진 온도를 조절기를 제어하는 class (테스트 대상)
+ *
+ *
+class EngineControlSystem
+{
+	TemperatureSensor& sensor_;
+
+public:
+	/**
+	 * 온도제어기를 초기화
+	 * @param sensor: 사용할 온도 센서 장치 드라이버
+	 *
+	EngineControlSystem(TemperatureSensor& sensor) : sensor_(sensor)
+	{
+		...
+	}
+
+	/**
+	 * 테스트 대상. 일정 주기로 온도변화를 감지하고 현재 상태를 고려하여 온도조절모드를 결정한다. 그리고 누적부하량을 계산한다.
+	 * @return 누적된 부하량
+	 *
+	int controlTemperature()
+	{
+		// 구현 코드는 대략 아래와 유사하다.
+		tempChange = getTemperatureChange() // 측정한 온도변화  status = 온도변화에따른_현재상태 
+		
+		비상모드_작동조건검사()
+		
+    	if 비상모드_작동조건 then
+        	mode = emergencyMode;    	
+    	else if 정지모드_작동조건 then
+       		mode = stopMode;
+    	else
+        	mode = 현재상태에따른_온도조절모드
+
+		부하량 = 부하량계산(mode);
+    	누적부하량 += 부하량
+
+    	return 누적부하량;
+	}
+	...
+};
+*/
+
+
+
+/* [문제 1. 작성 내용] */
+// 조건을 만족하는 테스트 입력을 아래 배열에 추가하시오. (배열의 이름을 임의로 수정하는 경우 채점시 오답 처리됨)
+// 각 테스트 케이스의 형식: {입력 개수 N, 온도변화 1, 온도변화 2, ... ,  온도변화 N}
+// 예를 들어, { 7, -20, -20, -1, 3, 20, 20, 0 } 는
+// 온도변화가  -20, -20, -1, 3, 20, 20, 0  순으로 측정됨을 의미한다.
+int testInput_example[] = { 7, -20, -20, -1, 3, 20, 20, 0 };
+
+//TODO: 문제1.(1-1) - 최종 누적부하량이 50이 되는 상황
+int testInput_1_1[] = { 16, -20, -20, -1, 3, 20, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+//TODO: 문제1.(1-2) - '현재 온도가 -20도 미만 또는 60도 초과인 경우'에 의해서 비상모드에 진입하고, 최종 누적비용이 59가 되는 상황
+int testInput_1_2[] = { 25, -20, -20, -1, 3, 20, 20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+
+//TODO: 문제1.(1-3) - 비상모드를 두 번 이하로 발생시키면서 최종 누적부하량이 38 이하가 되는 상황
+int testInput_1_3[] = { 10, -20, -1, -20, 21, 0, 20, -20, 20, 0, 0 };
+
+
+
+// [문제2. 테스트 코드 작성]
+// NOTE: 작성한 코드가 실행된 후 메모리 누수가 발생할 경우 오답 처리됨
+
+namespace
+{
+	class FakeTemperatureSensor : public TemperatureSensor
+	{
+		int* inputs_;
+		int index = 0;
+	public:
+		FakeTemperatureSensor(int fakeInputs[]) : inputs_(fakeInputs) {}
+
+		int getTemperatureChange() {
+			return inputs_[index++];
+		}
+	};
+}
+
+void test_2_1()
+{
+	// TODO: 항목 2-1. 
+	// 온도변화 값이 순차적으로 5, -10, -5, 1, 10, 20, 15 순으로 측정되는 경우를 재현하는 코드를 작성하라.
+	int inputs[] = { 5, -10, -5, 1, 10, 20, 15 };
+	FakeTemperatureSensor fakeSensor(inputs);
+	EngineControlSystem cs(fakeSensor);
+	for (int i = 0; i < 7; ++i)
+		cs.controlTemperature();
+}
+
+void test_2_2()
+{
+	// TODO: 항목 2-2. 
+	// 온도변화 값이 순차적으로 -20, -15, 5, 0, -2, -3, 10, 20, 20 순으로 측정되는 경우를 재현하는 코드를 작성하라.
+	int inputs[] = { -20, -15, 5, 0, -2, -3, 10, 20, 20 };
+	FakeTemperatureSensor fakeSensor(inputs);
+	EngineControlSystem cs(fakeSensor);
+	for (int i = 0; i < 9; ++i)
+		cs.controlTemperature();
+}
+
+// main 함수는 작성한 테스트 케이스를 실행하여 확인하는 용도로 사용한다.
+// 필요에 따라서 마음대로 변경하어도 무방하다. main 함수의 내용은 채점과 무관하다.
+int main(void)
+{
+	printTestInputResult("input_example", testInput_example);
+	printTestInputResult("input_1_1", testInput_1_1);
+	printTestInputResult("input_1_2", testInput_1_2);
+	printTestInputResult("input_1_3", testInput_1_3);
+
+	test_2_1();
+
+	test_2_2();
+
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//후보자수
+char str[10000 + 10][20 + 10];//후보자 이름
+int M;//투표참가인원
+char name[100000 + 10][20 + 10];//투표용지에 써있는 이름
+int score[100000 + 10];//점수
+
+int sum[10000 + 10];
+
+#define MAXHASH (1 << 14)
+#define MOD (MAXHASH - 1)
+
+int strcompare(char *a, char *b){
+    int i;
+    for (i = 0; a[i] && b[i] && (a[i] == b[i]); i++);
+    return a[i] - b[i];
+}
+
+int calhash(char *str){
+    int hash = 5381, c;
+    while (c = *str++) hash = (((hash << 5) + hash) + c) & MOD;
+    return hash;
+}
+
+int IDkey;
+
+struct HT{
+    int id; int hkey; char *org;
+    HT(){ id = hkey = 0; org = NULL; }
+    HT(int nid, int nk, char *str){ id = nid; hkey = nk; org = str; }
+};
+HT htbl[MAXHASH];
+
+void insertkey(char *str){//open addressing
+    int i, hkey = calhash(str), idx = hkey;
+    for (i = 0; i < MAXHASH; i++){
+        if (htbl[idx].id == 0){//새로운 문자열
+            htbl[idx] = HT(++IDkey, hkey, str); break;
+        }
+        idx = (idx + 13) & MOD;
+    }
+}
+
+int getkey(char *str){//open addressing
+    int i, hkey = calhash(str), idx = hkey;
+    for (i = 0; i < MAXHASH; i++){
+        if (htbl[idx].id == 0){//새로운 문자열
+            return 0;
+        }
+        else if ((htbl[idx].hkey == hkey) && (strcompare(htbl[idx].org, str) == 0)){
+            return htbl[idx].id;//이미 존재하는 문자열
+        }
+        idx = (idx + 13) & MOD;
+    }
+    return 0;//이런 경우 없음
+}
+
+void InputData(){
+	int i;
+    cin >> N;
+    for (i = 0; i < N; i++){
+        cin >> str[i];
+    }
+	cin >> M;
+    for (i = 0; i < M; i++){
+        cin >> name[i] >> score[i];
+    }
+}
+
+void solve(){
+	int key, i;
+    for (i = 0; i < N; i++){
+        insertkey(str[i]);
+    }
+    for (i = 0; i < M; i++){
+		key = getkey(name[i]);
+		if(key) sum[key] += score[i];
+    }
+}
+
+void OutputData(){
+   int i, j, max, maxidx;
+   for(i = 0; i < 3; i++){
+	   max = 0; maxidx = 0;
+	   for(j = 1; j <= N; j++){
+		   if(max < sum[j]){
+			   max = sum[j]; maxidx = j;
+		   }
+	   }
+	   cout << str[maxidx - 1] << " " << max << endl;
+	   sum[maxidx] = 0;
+   }
+}
+
+int main(){
+    InputData();//	입력 함수
+    //	코드를 작성하세요
+    solve();
+    OutputData();
+    return 0;
+}
+
+
+#include <iostream>
+#include <vector>
+#include "./lib/InductionSensor.h"
+
+// NOTE: 테스트 대상인 인덕션 경고 시스템은 아래와 같은 코드를 이용해서 구현되어 있다.
+
+/*
+ * Thermometer class
+ *
+ * Induction 장치의 온도를 얻기 위해 사용하는 온도 센서 장치 인터페이스
+ *
+class Thermometer {
+public:
+	virtual int getTemperature() = 0;
+};
+*/
+
+/*
+typedef enum SafetyState
+{
+	NORMAL = 0,  // 안정단계 (경고 아님)
+	WARNING_LEVEL1, // 1단계
+	WARNING_LEVEL2, // 2단계
+	WARNING_LEVEL3, // 3단계
+	WARNING_LEVEL4  // 4단계
+} SafetyState;
+
+...
+*/
+
+/*
+ * InductionSensor class
+ * 
+ * induction 장치의 온도를 체크하여 안전 기능을 수행하는 모듈
+ *
+class InductionSensor
+{
+public:
+	InductionSensor(Thermometer& thermometer) : thermometer_(thermometer) {
+		// 관련 초기화
+		// ...
+	}
+
+	 
+	/*
+	 * 테스트 대상인 checkTemperature는 아래와 같은 코드로 구현되어 있다.
+	 *
+	SafetyState checkTemperature(void)
+	{
+		int temperature = thermometer_.getTemperature();
+
+		stress = determineStress(temperature, stress);  // temperature로 스트레스 지수 누적 계산
+		...
+
+		if (stress < 0) stress = 0;
+		if (stress > 20) stress = 20;
+
+		if (stress <= 12) return NORMAL;
+		if (stress <= 15) return WARNING_LEVEL1;
+		...
+	}
+
+
+private:
+	//Induction 장치의 온도를 얻기 위해 사용하는 온도 센서 장치 참조
+	Thermometer& thermometer_;
+	...
+};
+*/
+
+// 문제1.
+std::vector<SafetyState> prob1_expectedResults[2] = {
+	// 정답 배열의 Format - 발생할 경고 단계 번호 ( 두개 이상의 경고 단계 발생 시 작성 순서는 중요하지 않음 )
+	// 예) 문제의 답이, 총 2종류의 경고단계가 발생하고, 발생할 경고단계 번호가, 1단계와 2단계라면
+	// {WARNING_LEVEL1, WARNING_LEVEL2} 혹은 {WARNING_LEVEL2, WARNING_LEVEL1} 모두 가능
+	{ WARNING_LEVEL1, WARNING_LEVEL3  }, // 문제 (1-1)
+	{ WARNING_LEVEL1, WARNING_LEVEL2  }, // 문제 (1-2)
+};
+
+// 문제 2.
+std::vector<int> prob2_testInputs[3] = {
+	// 각 문제에 해당하는 TC를 설계
+	// TC배열의 Format : 감지되는 온도 값의 배열
+	// 예) 설계한 Test Case의 온도 정보의 갯수가 5개이고, 온도는 순서대로 각각 100,200,300,400,500 이라면
+	// {100,200,300,400,500} 으로 작성
+	{  900, 400, 400  }, // 문제 (2-1)
+	{ 900, 400, 400, 400, 400, 400, 800, 400  }, // 문제 (2-2)
+	{  900, 400, 400, 800 }, // 문제 (2-3)
+};
+
+// 문제 3. Format은 문제2의 TC와 동일
+std::vector<int> pr3_tc = { 900, 400, 400, 400 };
+
+// 문제 4. 테스트 코드 작성
+// TODO: 원하는 온도값을 전달할 수 있도록 fake/stub을 구현하여 제시된 상황을 재현하는 테스트 코드를 작성하시오.
+
+class FakeThermometer : public Thermometer
+{
+	int* fakeTemperatures;
+	int step = 0;
+public:
+	FakeThermometer(int* temps) : fakeTemperatures(temps) {}
+	int getTemperature()
+	{
+		return fakeTemperatures[step++];
+	}
+};
+
+void Pr4_Test_1()
+{
+	// TODO: 항목 4-1. 
+	// 온도값이 920,850,420,610,375 순으로 감지되는 경우를 재현하는 테스트 코드 작성
+	int inputs[] = { 920,850,420,610,375 };
+	FakeThermometer fake(inputs);
+
+	InductionSensor  t(fake);
+	for (int i = 0; i < 5; ++i)
+		t.checkTemperature();
+}
+
+void Pr4_Test_2()
+{
+	// TODO: 항목 4-2. 
+	// 온도값이 470,350,460,710,840,915,877 순으로 감지되는 경우를 재현하는 코드 작성
+	int inputs[] = { 470,350,460,710,840,915,877 };
+	FakeThermometer fake(inputs);
+
+	InductionSensor  t(fake);
+	for (int i = 0; i < 7; ++i)
+		t.checkTemperature();
+}
+
+int main()
+{
+	// 참고용으로 실행하고 싶은 코드가 있다면 작성한다.
+	// main 함수의 코드는 채점과 관련이 없다.
+	return 0;
+}
+
+
+#include <iostream>
+using namespace std;
+
+int N;//직원 수
+int S;//시작 직원 번호
+int M;
+
+#define MAXQ (1 << 16)
+#define MOD (MAXQ - 1)
+int queue[MAXQ];
+int wp, rp;
+void push(int n) { queue[wp] = n; wp = (wp + 1) & MOD; }
+int front() { return queue[rp]; }
+void pop() { rp = (rp + 1) & MOD; }
+int empty() { return wp == rp; }
+void solve(){
+	int i, j = S;
+	for(i = 1; i <= N; i++){
+		push(j); if(++j > N) j = 1;
+	}
+	for(i = 1; i <= N; i++){
+		for(j = 1; j < M; j++){
+			push(front()); pop();
+		}
+		cout << front() << " "; pop();
+	}
+	cout << endl;
+}
+
+void InputData(){
+	cin >> N >> S >> M;
+}
+int main(){
+
+	InputData();//	입력 함수
+    
+	//	코드를 작성하세요
+	solve();
+
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//제품 수
+int M;//제품 종류 수
+int ID[100000 + 10];//제품 ID
+
+int sum[10][100000 + 10];
+int cnt[10];
+int used[10];
+int sol;
+void DFS(int n, int p, int m){
+	int i;
+	if(sol <= m) return;//가지치기, 이미 이전 답보다 좋지 않음
+	if(n > M){//완성, 종료 조건
+		sol = m; return;
+	}
+	for(i = 1; i <= M; i++){//제품 ID
+		if(used[i]) continue;//이미 i번 제품은 정리 했음
+		used[i] = 1;
+		int mcnt = cnt[i] - (sum[i][p + cnt[i] - 1] - sum[i][p - 1]);
+		DFS(n + 1, p + cnt[i], m + mcnt);
+		used[i] = 0;
+	}
+}
+int solve(){
+	int i, j;
+	for(i = 1; i <= N; i++) sum[ID[i]][i] = 1;
+	for(i = 1; i <= M; i++){//ID 1~M
+		for(j = 2; j <= N; j++) sum[i][j] += sum[i][j - 1];
+		cnt[i] = sum[i][N];
+	}
+	sol = N;
+	DFS(1, 1, 0);//순서, 놓을 첫 위치, 옮긴 수
+	return sol;
+}
+
+void InputData(){
+	int i;
+	cin >> N >> M;
+	for(i = 1; i <= N; i++){
+		cin >> ID[i];
+	}
+}
+int main(){
+	int ans = -1;
+
+	InputData();//입력 함수
+	
+	//	코드를 작성하세요
+	ans = solve();
+
+	cout << ans << endl;
+	return 0;
+}
+
+#include <stdio.h>
+#include "./lib/DroneController.h"
+
+
+POS sensorTable[8] = { { 0,0 },{ 1,10 },{ 2,6 },{ 4,1 },{ 5,5 },{ 6,10 },{ 7,8 },{ 8,2 } };
+
+/**
+* drone.h에는 대략적으로 아래와 같이 구현된 함수의 정의가 있다.
+* 구현 참고용이므로 본 주석을 풀어서 아래 코드를 사용해서는 안된다. (drone.h에 포함된 내용임)
+* 아래 주석을 해제하여 사용하는 경우 정상적으로 동작하지 않는다.
+*/
+
+/**
+* (y, z) 좌표를 표현하는 자료구조
+*
+typedef struct pos {
+	int y;
+	int x;
+} POS;
+
+/**
+ * 화재 감지 센서 인터페이스
+ *
+class FireSensor
+{
+public:
+	/**
+	 * 현재 화재를 감지한 센서의 위치 값을 반환
+	 * @return POS 타입의 (y, x) 좌표. 예를 들어, 1번 센서에서 화재를 감지한 경우 {1, 10}을 반환
+	 *
+	virtual POS getSensorPosition() = 0;
+};
+
+/**
+ * 드론 관제 시스템 (테스트 대상)
+ *
+class DroneController
+{
+	POS currentDrone1_ = { 0,0 };
+	POS currentDrone2_ = { 10,10 };
+	
+	FireSensor* sensor_;
+	...
+public:
+	DroneController(FireSensor* sensor) : sensor_(sensor) { ... }
+	
+	/**
+	 * 화재가 발생한 위치를 얻어와서 현재 드론과의 위치를 계산하여 가장 가까운 드론을 선택하는 함수 (테스트 대상)
+	 * 다음 위치 계산을 위해 선택된 드론의 위치를 저장해둔다. (선택된 드론이 해당 좌표로 이동함을 가정)
+	 * @return 화재가 발생한 곳과 가장 가까운 드론의 번호. 1 혹은 2
+	 *
+	int selectDrone()
+	{
+		POS sensed = sensor_->getSensorPosition();  // 화제를 감지한 센서의 위치 획득
+
+		int dx = currentDrone1_.x - sensed.x;
+		int dy = currentDrone1_.y - sensed.y;
+		int dist1 = dx*dx + dy*dy;
+
+		dx = currentDrone2_.x - sensed.x;
+		dy = currentDrone2_.y - sensed.y;
+		int dist2 = dx*dx + dy*dy;
+
+		if (dist2 >= dist1)
+		{
+			currentDrone1_ = sensed;
+			return 1;
+		}
+		else
+		{
+			currentDrone2_ = sensed;
+			return 2;
+		}
+	}
+	...
+}
+*/
+
+// 문제1.	
+// 정답 배열의 Format - 화재감지 센서번호가 주어진 순서대로 감지 되었을 때, 출동하는 드론의 번호를 순서대로 기술
+// 예를 들어, 드론이 1, 1, 2, 2, 1 순으로 출동한다면 { 1, 1, 2, 2, 1 }로 기록
+
+int expectedResult_1_1[5] = { 2, 2, 2, 1, 1 };  //TODO: 문제 (1-1) 1, 2, 5, 3, 7 순으로 센서 감지
+int expectedResult_1_2[5] = { 1, 2, 2, 1, 1 };  //TODO: 문제 (1-2) 7, 6, 5, 4, 3 순으로 센서 감지
+
+ // 문제 2.
+ // 각 문제에 해당하는 TC를 설계
+ // TC배열의 Format : 주어진 순서대로 드론이 현장에 방문을 하기 위해 감지 되야 하는 화재센서의 번호를 순서대로 기술
+ // 예) 2, 2, 1, 2, 2번 순으로 드론이 현장에 방문하기 위해서는 1,2,3,4,5순으로 센서가 감지되어야함.
+ // {1, 2, 3, 4, 5} 기입
+int testInput_example[5] = { 1, 2, 3, 4, 5 };
+
+int testInput_2_1[5] = { 2, 1, 4, 7, 3}; //TODO: 문제 (2-1) 1, 1, 1, 1, 1 => 1번 드론만 출동하는 경우
+int testInput_2_2[5] = { 5, 1, 6, 2, 4 }; //TODO: 문제 (2-2) 2, 2, 2, 2, 2 => 2번 드론만 출동하는 경우
+int testInput_2_3[5] = { 3, 7, 1, 5, 4 }; //TODO: 문제 (2-3) 1, 1, 2, 2, 1 => 1, 2번 병행 출동하는 경우
+int testInput_2_4[5] = { 3, 5, 1, 7, 2 }; //TODO: 문제 (2-4) 1, 2, 2, 1, 2 => 1, 2번 병행 출동하는 경우
+
+
+// 문제 3. 테스트 코드 작성
+
+class FakeFireSensor : public FireSensor
+{
+	int* sensors_;
+	int count_ = 0;
+public:
+	FakeFireSensor(int* sensorNumbers) : sensors_(sensorNumbers) {}
+
+	POS getSensorPosition()
+	{
+		return sensorTable[sensors_[count_++]];
+	}
+};
+
+void test_3_1()
+{
+	// TODO: 항목 3-1. 
+	// 화재 위치가 센서 1, 7, 2, 3, 5 순으로 감지되는 상황을 재현하는 테스트 코드
+	int fakeInput[] = { 1, 7, 2, 3, 5 };
+	FakeFireSensor sensor(fakeInput);
+	DroneController controller(&sensor);
+	for (int i = 0; i < 5; ++i)
+		controller.selectDrone();
+
+}
+
+void test_3_2()
+{
+	// TODO: 항목 3-2. 
+	// 화재 위치가 센서 3, 1, 4, 6, 2 순으로 감지되는 상황을 재현하는 테스트 코드
+	int fakeInput[] = { 3, 1, 4, 6, 2 };
+	FakeFireSensor sensor(fakeInput);
+	DroneController controller(&sensor);
+	for (int i = 0; i < 5; ++i)
+		controller.selectDrone();
+}
+
+// 참고용으로 실행하고 싶은 코드가 있다면 아래 main()에 작성하여 활용할 수 있다.
+// main 함수의 코드는 채점과 관련이 없다.
+int main()
+{
+	printInputResult("example", testInput_example);
+	printInputResult("2-1", testInput_2_1);
+	printInputResult("2-2", testInput_2_2);
+	printInputResult("2-3", testInput_2_3);
+	printInputResult("2-4", testInput_2_4);
+
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+char str[100000 + 10];
+char cmd[500000 + 10];
+char sol[600000 + 10];
+
+struct NODE{
+    char ch; NODE *prev, *next;
+    NODE(){ ch = 0; prev = next = NULL; }
+    NODE(char nc, NODE *p){//뒤에서 앞에 삽입
+        ch = nc; next = p; prev = p->prev; prev->next = this;
+    }
+    ~NODE(){ delete next; }
+    void selfdel(){
+        prev->next = next; next->prev = prev; next = NULL; delete this;
+    }
+};
+
+struct LINE{
+    NODE *head, *tail, *cur;
+    LINE(){
+        head = new NODE(); cur = tail = new NODE(); head->next = tail; tail->prev = head;
+    }
+    ~LINE(){ delete head; }
+    void insert(char ch){
+        cur->prev = new NODE(ch, cur);
+    }
+    void left(){
+        if(cur->prev != head) cur = cur->prev;
+    }
+    void right(){
+        if (cur != tail) cur = cur->next;
+    }
+    void del(){
+        if (cur->prev != head) cur->prev->selfdel();
+    }
+    void PRT(){
+		int i = 0;
+        for (cur = head->next; cur != tail; cur = cur->next) sol[i++] = cur->ch;
+		sol[i] = 0;
+        cout << sol << endl;
+    }
+};
+LINE *line;
+
+void InputData(){
+    cin >> str;
+	cin >> cmd;
+}
+
+void solve(){
+    delete line; line = new LINE();
+	for (int i = 0; str[i]; i++) line->insert(str[i]);
+	
+    for (int i = 0; cmd[i]; i++){
+        switch (cmd[i]){
+        case 'B'://제거
+            line->del();
+            break;
+        case 'L'://커서 왼쪽으로 이동
+            line->left();
+            break;
+        case 'R'://커서 오른쪽으로 이동
+            line->right();
+            break;
+        default://삽입
+            line->insert(cmd[i]);
+        }
+    }
+}
+
+void OutputData(){
+    line->PRT();
+}
+
+int main(){
+    InputData();
+    solve();
+    OutputData();
+    return 0;
+}
+
+#include <stdio.h>
+#include "./lib/HeartRateMonitor.h"
+
+/* [문제 1. 작성 내용] */
+// 조건을 만족하는 테스트 입력을 아래 배열에 추가하시오. (배열의 이름을 임의로 수정하는 경우 채점시 오답 처리됨)
+
+// 각 테스트 케이스의 형식: {입력 개수 N, 심장박동수 1, 심장박동수 2, ... ,  심장박동수 N}
+// 예를 들어, { 5, 82, 65, 47, 43, 49 } 는
+// 심장박동수가 82, 65, 47, 43, 49 순으로 측정됨을 의미한다.
+
+/*
+모니터링 실패를 의미하는 상수
+
+#define MONITORING_FAILED    (0x80000000)
+*/
+
+// 샘플 Testcase : '[ 경고 발생 논리 예 ]'에 해당하는 테스트 입력 예
+unsigned int sampleInput[] = { 10, 82, 65, 47, 43, 49, 43, 65, MONITORING_FAILED, 70, 68 }; 
+
+/*
+TODO: 문제1-1 
+  - 최종 경고 점수가 15점이면서
+  - 50~59 혹은 80~89 구간에 해당하는 심장박동수가 감지되는 상황이 반드시 두 번 발생되며
+  - 100이상 혹은 44이하 구간에 해당하는 심장박동수가 감지되는 상황이 반드시 한 번 발생하는 상황
+*/
+unsigned int testInput_1_1[] = { 15, 82, 65, 47, 43, 49, 65, MONITORING_FAILED, 70, 68, 45, 50, 45, 45, 45, 60 /*FIXME*/ };
+
+/*
+TODO: 문제 1-2
+  - 최종 경고 점수가 4점이면서
+  - 경고 점수가 20점 이상이 되어 경고를 한번 이상 발생시키며, (단, 모니터링 실패가 연속 3번 이상 발생하는 경우를 만들면 안 됨) 
+  - 정상 심장박동수가 연속 세번 감지되는 일이 한번 이상 발생하는 상황
+*/
+unsigned int testInput_1_2[] = { 10 + 8, 82, 65, 47, 43, 49, 43, 65, MONITORING_FAILED, 70, 68, 110, 110, 70, 70, 70, 70, 50, 60 /*FIXME*/ };
+
+
+// 테스트 대상은 아래 주석과 같이 구현되어 있다. 
+// 필요한 경우 아래 주석의 내용을 참고하여 테스트 코드를 작성하시오.
+/* 
+ * 구현 참고용이므로 본 주석을 풀어서 아래 코드를 사용해서는 안된다.  (HeartRateMonitor.h에 포함된 내용임)
+ * 아래 주석을 해제하여 사용하는 경우 정상적으로 동작하지 않는다.
+
+
+
+/*
+ * HeartRateSensor class
+ * 현재 측정된 심장박동수 값을 반환하는 인터페이스
+ *
+
+class HeartRateSensor
+{
+public:
+	/*
+	 * 호출 시 현재 감지된 심장 박동수를 반환한다.
+	 * @return 현재 심장 박동수를 나타내는 정수 값. 혹은 감지 실패시 MONITORING_FAILED 반환 
+	 *
+	virtual unsigned int getHeartbeat() = 0;
+};
+
+
+/**
+ * HeartRateMonitor class
+ * 심장 박동 수 모니터링 (테스트 대상)
+ *
+ *
+class HeartRateMonitor
+{
+public:
+	/*
+	 * 환자 상태 경고 모듈을 초기화하는 함수
+	 * 누적경고값 등 관련 값들을 모두 초기화 한다
+	 * (해당 로직에서 사용하는 변수는 아래 생성자에서 초기화 됨을 가정한다.)
+	 *
+	HeartRateMonitor(HeartRateSensor& sensor) : sensor_(sensor) {
+		... 초기화 코드
+	}
+
+	/**
+	 * 호출될 때 마다 센서로 부터 심장 박동 수를 얻어와서 정해진 로직에 따라 '경고 점수'를 계산한다. (테스트 대상)
+	 * @return 현재 누적 계산된 '경고 점수'
+	 *
+	int calculateWarningScore()
+	{
+		// 로직 구현은 대략 아래와 같다.
+		heart_beat = sensor_.getHeartbeat();
+
+		if(heart_beat == MONITORING_FAILED)
+		{
+			failed_conti_cnt++;
+			if(failed_conti_cnt >= 3)
+			{
+				stable_conti_cnt = 0; warning_score = 20;
+			}
+			return warning_score;
+		}
+		else failed_conti_cnt = 0;
+
+		if(60<=heart_beat && heart_beat <= 79)
+		{
+			stable_conti_cnt++;
+			if(stable_conti_cnt>=3) stable_conti_cnt = 3;
+
+			switch(stable_conti_cnt)
+			{
+				case 1: warning_score -= 2; break;
+				case 2: warning_score -= 3; break;
+				case 3: warning_score -= 5; break;
+			}
+			if(warning_score<0) warning_score = 0;
+		}
+		else
+		{
+			stable_conti_cnt = 0;
+			if((80<=heart_beat && heart_beat <= 89) || (50<=heart_beat && heart_beat <= 59))
+				warning_score += 1;
+			else if((90<=heart_beat && heart_beat <= 99) || (45<=heart_beat && heart_beat <= 49))
+				warning_score += 3;
+			else if((100<=heart_beat) || (heart_beat <= 44))
+				warning_score += 7;
+			if(warning_score>20) warning_score = 20;
+		}
+		return warning_score;
+	}
+
+	...
+
+};
+*/
+
+
+// [문제2. 테스트 코드 작성]
+// NOTE: 작성한 코드가 실행된 후 메모리 누수가 발생할 경우 오답 처리됨
+
+class FakeHeartRateSensor : public HeartRateSensor
+{
+public:
+	FakeHeartRateSensor(unsigned int* fakeInput) : fakeInput_(fakeInput) {}
+
+	unsigned int getHeartbeat() 
+	{
+		return fakeInput_[count_++];
+	}
+
+private:
+	unsigned int* fakeInput_ = nullptr;
+	int count_ = 0;
+};
+
+void test_2_1(void)
+{
+	// TODO: 문제2-1
+	// 심장 박동 수가 59 - 101 - 86 - 78 - 모니터링 실패 - 75 순으로 측정되는 경우를 재현하는 코드를 작성하라.
+	// 단, 채점 시 test_2_1()만 호출되므로, test_2_1()을 호출했을 때 필요한 테스트 동작이 모두 수행될 수 있도록 작성해야 한다.
+
+	unsigned int fakeInputs[] = {59, 101, 86, 78, MONITORING_FAILED, 75};
+	FakeHeartRateSensor sensor(fakeInputs);
+	HeartRateMonitor hrm(sensor);
+	
+	for (int i = 0; i < 6; ++i)
+		hrm.calculateWarningScore();
+}
+
+
+void test_2_2(void)
+{
+	// TODO: 문제 2-2
+	// 심장 박동 수가 67 - 75 - 61 - 모니터링 실패 - 55 - 45 - 40 - 39 - 37 순으로 측정되는 경우를 재현하는 코드를 작성하라.
+	// 단, 채점 시 test_2_2()만 호출되므로, test_2_2()을 호출했을 때 필요한 테스트 동작이 모두 수행될 수 있도록 작성해야 한다.
+
+	unsigned int fakeInputs[] = { 67, 75, 61, MONITORING_FAILED, 55, 45, 40, 39, 37 };
+	FakeHeartRateSensor sensor(fakeInputs);
+	HeartRateMonitor hrm(sensor);
+
+	for (int i = 0; i < 9; ++i)
+		hrm.calculateWarningScore();
+}
+
+// 아래 main 함수는 작성한 테스트 케이스를 실행하여 확인하는 용도로 사용할 수 있다. (필요에 따라서 마음대로 변경하어도 무방)
+// NOTE: main 함수의 내용은 채점시 활용되지 않으므로 동작에 꼭 필요한 코드를 main 함수에만 작성해서는 안된다.
+int main(void)
+{
+	printTestInputResult("Sample Input", sampleInput);
+
+	printTestInputResult("Test_1_1 Input", testInput_1_1);
+	printTestInputResult("Test_1_2 Input", testInput_1_2);
+
+	test_2_1();
+	test_2_2();
+
+	return 0;
+}
