@@ -1,0 +1,1316 @@
+#include <iostream>
+using namespace std;
+
+int N;//송수신 안테나 수
+int H[100000 + 10];//송수신 안테나 높이
+
+int stack[100000 + 10];
+int sp;
+void push(int h){
+	stack[++sp] = h;
+}
+void pop(){
+	sp--;
+}
+int top(){
+	return stack[sp];
+}
+int size(){
+	return sp;
+}
+bool empty(){
+	return sp == 0;
+}
+
+void InputData(){
+    cin >> N;
+    for (int i = 0; i < N; i++) cin >> H[i];
+}
+
+int Solve(){
+	int cnt = 0;
+	int i;
+	for (i = 0; i < N; i++){
+		while (!empty() && (top() < H[i])){
+			cnt++;
+			pop();
+		}
+		if (!empty()) {
+			cnt++;
+			if (top() == H[i]) pop();
+		}
+		push(H[i]);
+	}
+	return cnt;
+}
+
+int main(){
+	int ans = -1;
+    InputData();//	입력 함수
+
+	ans = Solve();//	코드를 작성하세요
+	
+	cout << ans << endl;//출력
+    return 0;
+}
+
+
+#include <iostream>
+using namespace std;
+
+int N; // 세로크기
+int M; // 가로크기
+int map[50 + 10][50 + 10]; // 사진 데이터
+
+struct st
+{
+    int r, c;
+}dat[2][50*50];
+int count;
+int dr[] = {0,0,1,-1};
+int dc[] = {1,-1,0,0};
+
+#define ABS(a) (((a)<0) ? -(a) : (a))
+
+void Fill(int r, int c, int p){
+	int i;
+    if (map[r][c] != 1) return;
+    map[r][c] = 0;
+    dat[p][count].r = r;
+    dat[p][count].c = c;
+    count++;
+	for(i=0; i<4; i++) Fill(r+dr[i], c+dc[i], p);
+}
+
+int Solve(void){
+	int ans = 0x7FFFFFFF;
+	int point = 0;
+    int cnt[2];
+
+	for (int i = 1; i <= N; i++){
+        for (int j = 1; j <= M; j++){
+            if (map[i][j] == 1){
+                count = 0;
+                Fill(i, j, point);
+                cnt[point] = count;
+                point++;
+            }
+        }
+    }
+    for (int i = 0; i < cnt[0]; i++){
+        for (int j = 0; j < cnt[1]; j++){
+            int temp = ABS(dat[0][i].r - dat[1][j].r) + ABS(dat[0][i].c - dat[1][j].c);
+            if (temp < ans) ans = temp;
+        }
+    }
+    return ans - 1;
+}
+
+void InputData(void){
+	cin >> N >> M;
+	for (int i = 1; i <= N; i++){
+		for (int j = 1; j <= M; j++){
+			cin >> map[i][j];
+		}
+	}
+ 
+}
+int main(void){
+	
+	InputData();	// 입력함수
+	
+	// 코드를 작성 하세요
+
+	int ans = Solve();
+    cout << ans << endl;
+    return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;	// 필터의 수
+int R[11]; // 반사의 정도
+int P[11]; // 투과의 정도
+int sol = 11;
+int diff = 0x7FFFFFFF;
+
+int ABS(int num){
+	return (num < 0) ? -num : num;
+}
+
+void InputData(void){
+	cin >> N;
+	for(int i=1; i<=N; i++)  cin >> R[i] >> P[i];
+}
+
+void Dfs(int n, int r, int p, int cnt){
+	int val = ABS(r - p);
+	if (n > N) {
+		if (cnt == 0) return;
+		if (val < diff)
+		{
+			diff = val;
+			sol = cnt;
+		}
+		else if (diff == val)
+		{
+			if (sol>cnt) sol = cnt;
+		}
+		return;
+	}
+	Dfs(n+1, r*R[n], p+P[n], cnt+1);
+	Dfs(n+1, r, p, cnt);
+}
+int main(){
+
+	InputData(); // 입력함수
+	
+	// 코드를 작성 하세요
+	Dfs(1, 1, 0, 0);
+	cout << N - sol << endl;
+	return 0;
+}
+
+#include <cstdio>
+#include <cstring>
+#include <locale>
+#include <vector>
+#include "./lib/MemoryAllocator.h"
+
+// 테스트 대상은 아래 주석과 같이 구현되어 있다. 
+// 필요한 경우 아래 주석의 내용을 참고하여 테스트 케이스 입력과 테스트 코드를 작성하시오. 
+// NOTE: 테스트 대상 코드는 빌드에 이미 포함되어 있으니 아래 주석을 해제하여 사용하지 마시오.
+
+/**
+ * 상수 정의
+ *
+#define MAX_REQ_LIMIT	(50)
+#define MEMORY_SIZE		(20)
+*/
+
+/**
+ * Input class
+ * 입력된 요청을 가져올 수 있는 인터페이스
+ *
+ *
+class Input
+{
+public:
+	/**
+	 * 입력된 요청을 가져오는 기능 수행
+	 * @return 입력된 요청을 호출할 때 마다 하나 씩 반환
+	 *
+	virtual char getReqInput() = 0;
+};
+*/
+
+/**
+ * MemoryAllocator class
+ * 메모리 할당 및 반납 (테스트 대상)
+ *
+class MemoryAllocator
+{
+public:
+	/**
+	 * 메모리를 할당하고 반납하는 모듈을 초기화
+	 * 메모리 상태 등을 초기화하는 로직이 포함되어 있음
+	 *
+	MemoryAllocator(Input& inputDevice) : input_(inputDevice) {}
+
+private:
+	void processRequest(char req)
+	{
+		int alloc, id, size;
+
+		if (req < 0) {
+			req = -req;
+			alloc = 0;
+		}
+		else {
+			alloc = 1;
+		}
+		id = req / 10;
+		size = req % 10;
+
+		doMemoryAllocator(alloc, id, size);
+	}
+
+private:
+	Input& input_;
+	int memoryStatus_[MEMORY_SIZE];
+	int freeSpace_ = MEMORY_SIZE;
+};
+*/
+
+
+/* [문제 1. 작성 내용] */
+// 테스트 케이스를 아래 배열에 추가하시오. (배열의 이름을 임의로 수정하는 경우 채점시 오답 처리됨)
+// 각 테스트 케이스의 형식: { 입력 갯수, 입력 요청 값 1, 입력 요청 값 2, ... , 입력 요청 값 N }
+
+// 샘플 Testcase : 문제에서 동작을 설명하기 위한 예제
+// 메모리 할당자에 입력할 요청 값을 의미 (첫번째 요소는 입력할 요청 값의 개수)
+int sampleInput_keys[MAX_REQ_LIMIT + 1] = { 6, 14, 38, -14, 22, 43, 16 };
+
+//TODO: 문제1.(1-1) - 최종 남은 용량이 10KB가 되는 상황을 구현
+int test_1_1_keys[MAX_REQ_LIMIT + 1] = { 13, 11, 22, 34, 48, 58, 65, -48, 47, -11, -22, -34, -47, 15 };
+
+//TODO: 문제1.(1-2) - 남은 용량이 6KB인 상태에서 연속으로 4KB인 공간이 없어 4KB 할당을 못하는 상황을 구현
+int test_1_2_keys[MAX_REQ_LIMIT + 1] = { 15, 11, 22, 34, 48, 58, 65, -48, 47, -11, -22, -34, 12, 22, -12, 14 };
+
+
+// [문제2. 작성 내용]
+// NOTE: 답안 코드 실행 중 메모리 누수가 발생하면 오답 처리됨
+
+namespace
+{
+	class FakeInput : public Communicator
+	{
+	public:
+		FakeInput(int keys[]) : fakeKey_(keys) {}
+
+		virtual int getReqInput() override
+		{
+			return fakeKey_[index++];
+		}
+
+		void send(int result) override {
+			lastResult_ = result;
+		}
+
+		int getLastSent() {
+			return lastResult_;
+		}
+	private:
+		int lastResult_ = 0;
+		int* fakeKey_;
+		int index = 0;
+	};
+}
+
+void test_2_1(void)
+{
+	// TODO: // 문제2.(2-1)
+	// 요청 값의 입력이 다음의 순서대로 발생하는 상황: 12 -> 24 -> 38 -> -38 -> -12
+	int inputs[] = { 12, 24, 38, -38, -12 };
+	FakeInput fakeInput(inputs);
+	MemoryAllocator memory(fakeInput);
+
+	for (int i = 0; i < 5; ++i)
+		memory.processRequest();
+}
+
+void test_2_2(void)
+{
+	// TODO: 문제2.(2-2) 
+	// 요청 값의 입력이 다음의 순서대로 발생하는 상황: 18 -> 21 -> -18 -> 33 -> 41 -> -33
+	int inputs[] = { 18, 21, -18, 33, 41, -33 };
+	FakeInput fakeInput(inputs);
+	MemoryAllocator memory(fakeInput);
+
+	for (int i = 0; i < 6; ++i)
+		memory.processRequest();
+}
+
+// 다음과 같이 정의된 TestCase를 입력 받아서 
+// 해당 input으로 요청값이 발생하는 상황을 재현하고, 마지막으로 전송되는 결과를  expected와 비교하여 검증하는 코드를 구현하라.
+// 단, expected와 같은지 확인하는 verify API는 반드시 아래의 API를 이용하도록 한다.
+
+//void assertEquals(int expected, int actual);
+
+void test_2_3(std::vector<int> inputReqs, int expected) {
+	// TODO: 문제 2-3
+	FakeInput fakeInput(inputReqs.data());
+	MemoryAllocator memory(fakeInput);
+
+	for (int i = 0; i < inputReqs.size(); ++i)
+		memory.processRequest();
+
+	assertEquals(expected, fakeInput.getLastSent());
+	//assertEquals(expected, send를 통해 전달되는 값 중 마지막 값);
+}
+
+/* [문제 3. 작성 내용] */
+// 기능 요구사항에서 고려하지 못한 상황을 재현하는 테스트 케이스를 아래 배열에 추가하시오. (배열의 이름을 임의로 수정하는 경우 채점시 오답 처리됨)
+/* 테스트 케이스의 형식:
+{
+	테스트 케이스 수,
+	{
+		{ 입력 갯수, 입력 요청 값 1, 입력 요청 값 2, ..., 입력 요청 값 N },
+		...
+		{ 입력 갯수, 입력 요청 값 1, 입력 요청 값 2, ..., 입력 요청 값 N },
+	}
+};
+*/
+
+typedef int InputSequence[MAX_REQ_LIMIT];
+
+struct ExceptionalCases {
+	int numberOfCases;
+	InputSequence inputKeys[10];
+};
+
+
+// TODO: 문제 3
+ExceptionalCases test_3_cases = {
+
+	3, /* FIXME */
+	{
+	{ 14, 11, 22, 34, 48, 58, 65, -48, 47, -11, -22, -34, -47, 15, 11 /* FIXME */}, // ERR_DUPLICATED_ID
+	{ 14, 11, 22, 34, 48, 58, 65, -48, 47, -11, -22, -34, -47, 15, -71 /* FIXME */}, // ERR_NO_ID_FOUND
+	{ 2, 13, -14 /* FIXME */}, // ERR_invalid_SIZE
+	}
+};
+
+
+// 참고용으로 실행하고 싶은 코드가 있다면 아래 main()에 작성하여 활용할 수 있다.
+// main 함수의 코드는 채점과 관련이 없다.
+int main()
+{
+	printTestInputResult("Sample Input", sampleInput_keys);
+	printTestInputResult("Test_1_1 Input", test_1_1_keys);
+	printTestInputResult("Test_1_2 Input", test_1_2_keys);
+
+	test_2_1();
+	test_2_2();
+
+	return 0;
+}
+
+#include <iostream>
+using namespace std;
+
+int N;//도화지 크기
+char A[10 + 2][10 + 2];//도화지 색정보
+
+void InputData(){
+    cin >> N;
+    for (int i = 0; i < N; i++) cin >> A[i];
+}
+
+int Solve(){
+	int i, r, c, minr, minc, maxr, maxc, cnt = 0;
+	int check[10] = {0};
+	for (i = '1'; i <= '9'; i++){
+		//i번색 상하좌우 찾기
+		minr = minc = 10;
+		maxr = maxc = 0;
+		for (r = 0; r < N; r++){
+			for (c = 0; c < N; c++){
+				if (A[r][c] != i) continue;
+				if (minr > r) minr = r;
+				if (maxr < r) maxr = r;
+				if (minc > c) minc = c;
+				if (maxc < c) maxc = c;
+			}
+		}
+		if (minr == 10) continue;//해당 색 없음
+		//i번색 영역에 칠해진 다른 색 찾아 표시하기
+		check[i-'0']++;//해당색 표시
+		for (r = minr; r <= maxr; r++){
+			for (c = minc; c <= maxc; c++){
+				if (A[r][c] == i) continue;//i번 색이면 skip
+				check[A[r][c]-'0']++;//해당색에 덮여진 다른색 표시하기
+			}
+		}
+	}
+	//check 배열에 1로 카운트 된 색이 다른색을 덧칠하지 않은 색임(0이면 없는 색임)
+	for (i = 1; i <= 9; i++){
+		if (check[i] == 1) cnt++;
+	}
+	return cnt;
+}
+
+int main(){
+	int ans = -1;
+    InputData();//	입력 함수
+
+	ans = Solve();//	코드를 작성하세요
+	
+	cout << ans << endl;//출력
+    return 0;
+}
+
+#include <cstdio>
+#include <cstring>
+#include <vector>
+#include <locale>
+
+#include "./lib/FTL.h"
+
+// 테스트 대상은 아래 주석과 같이 구현되어 있다. 
+// 필요한 경우 아래 주석의 내용을 참고하여 테스트 케이스 입력과 테스트 코드를 작성하시오. 
+// NOTE: 테스트 대상 코드는 빌드에 이미 포함되어 있으니 아래 주석을 해제하여 사용하지 마시오.
+
+#if 0
+
+/**
+ * 상수 정의
+ *
+#define MAX_REQ_LIMIT	(50)
+#define MAX_BLOCK_COUNT	(8)
+
+#define W 1 // Write(쓰기)
+#define M 2 // Modify(수정)
+#define R 3 // Read(읽기)
+#define D 4 // Delete(삭제)
+
+
+/**
+ * Request class
+ * 요청 데이터 구조
+ */
+struct Request {
+	int operation;  // W, M, R, D 중 하나 
+	int block;
+	int length;
+};
+*/
+
+
+/**
+ * FlashMemory 인터페이스
+ * 플래시 메모리의 물리 블록에 읽기, 쓰기, 삭제 동작을 수행하도록 지시하는 인터페이스
+ *
+ */
+class FlashMemory
+{
+public:
+	virtual bool write(int blockNumber/*, const BlockData* data*/) = 0; // 데이터는 편의상 생략 
+	virtual bool read(int blockNumber/*, BlockData* data*/) = 0; // 데이터는 편의상 생략 
+	virtual bool erase(int blockNumber) = 0;
+};
+#endif
+
+
+/**
+ * [테스트 대상] FTL class
+ * 논리 블록에 대한 요청을 받아 상황에 따라 적절한 물리 블록에 요청 동작을 수행 (테스트 대상)
+ *
+ *
+class FTL
+{
+public:
+	/**
+	 * FTL 모듈을 초기화
+	 * 
+	 * @param flashMemory 플래시 메모리의 물리 블록에 동작을 지시하는 제어 인터페이스
+	 *
+	FTL(FlashMemory& flashMemory) : flashMemory_(flashMemory) {
+		resetStatus();
+	}
+
+	void resetStatus()
+	{
+		for (int i = 0; i < MAX_BLOCK_COUNT; i++) {
+			mappingStatus_[i] = -1;
+			physicalStatus_[i] = 0;
+			eraseStatus_[i] = 0;
+		}
+		freeBlockCount_ = MAX_BLOCK_COUNT;
+	}
+
+	/**
+	 * 요청한 논리 블록에 쓰기 동작을 수행
+	 * @param start 쓰기 동작을 시작할 논리 블록 번호
+	 * @param length 쓰기 동작을 수행할 블록 갯수
+	 *
+	bool writeBlock(int start, int length)
+	{
+		if (!hasFreeLogicalBlock(start, length))
+			return false;
+
+		int firstFreeBlock = findFreePhysicalBlock(length);
+		if (firstFreeBlock < 0)
+			return false;
+
+		int block = firstFreeBlock;
+		for (int i = start; i < start + length; i++) {
+			eraseStatus_[block]++;
+			mappingStatus_[i] = block;
+			physicalStatus_[block] = 1;
+			block++;
+		}
+
+		freeBlockCount_ -= length;
+		
+		for (int i = 0; i < length; ++i) {
+			flashMemory_.erase(mappingStatus_[start + i]);
+			flashMemory_.write(mappingStatus_[start + i]);
+		}
+
+		return true;
+	}
+
+	/**
+	 * 요청한 논리 블록을 수정하는 동작을 수행
+	 * @param start 수정 동작을 시작할 논리 블록 번호
+	 * @param length 수정 동작을 수행할 블록 갯수
+	 *
+	bool modifyBlock(int start, int length)
+	{
+		if (!isUsedLogicalBlock(start, length))
+			return false;
+
+		int firstFreeBlock = findFreePhysicalBlock(length);
+		if (firstFreeBlock < 0)
+			return false;
+
+		int block = firstFreeBlock;
+		for (int i = start; i < start + length; i++) {
+			eraseStatus_[block]++;
+			physicalStatus_[mappingStatus_[i]] = 0;
+			mappingStatus_[i] = block;
+			physicalStatus_[block] = 1;
+			block++;
+		}
+
+		for (int i = 0; i < length; ++i) {
+			flashMemory_.erase(mappingStatus_[start + i]);
+			flashMemory_.write(mappingStatus_[start + i]);
+		}
+		
+		return true;
+	}
+
+	/**
+	 * 요청한 논리 블록의 내용을 읽어오는 동작을 수행
+	 * @param start 읽기 동작을 시작할 논리 블록 번호
+	 * @param length 읽기 동작을 수행할 블록 갯수
+	 *
+	bool readBlock(int start, int length)
+	{
+		if (!isUsedLogicalBlock(start, length))
+			return false;
+
+		for (int i = 0; i < length; ++i) {
+			flashMemory_.read(mappingStatus_[start + i]);
+		}
+
+		return true;
+	}
+
+	/**
+	 * 사용하지 않을 논리 블록을 해제
+	 * @param start 삭제 동작을 시작할 논리 블록 번호
+	 * @param length 삭제 동작을 수행할 블록 갯수
+	 *
+	bool deleteBlock(int start, int length)
+	{
+		if (!isUsedLogicalBlock(start, length))
+			return false;
+
+		for (int i = start; i < start + length; i++) {
+			physicalStatus_[mappingStatus_[i]] = 0;
+			mappingStatus_[i] = -1;
+		}
+		freeBlockCount_ += length;
+
+		return true;
+	}
+
+	int getFreeBlockCount() const
+	{
+		return freeBlockCount_;
+	}
+
+private:
+	// start 부터 count 개의 논리 블록이 모두 사용 중이면 true
+	bool isUsedLogicalBlock(int start, int count)
+	{
+		for (int i = start; i < start + count; i++) {
+			if (mappingStatus_[i] == -1) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// start 부터 count 개의 논리 블록이 모두 비어 있으면 true
+	bool hasFreeLogicalBlock(int start, int count)
+	{
+		for (int i = start; i < start + count; i++) {
+			if (mappingStatus_[i] != -1) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// count 개의 연속된 비어 있는 물리 블록을 앞에서부터 검색하여 찾으면 시작하는 물리 블록을 반환, 못 찾으면 -1을 반환
+	int findFreePhysicalBlock(int count)
+	{
+		for (int i = 0; i <= MAX_BLOCK_COUNT - count; i++) {
+			int j = 0;
+			for (j = i; j < i + count; j++) {
+				if (physicalStatus_[j] == 1) break;
+			}
+			if (j == i + count) {
+				return i;
+			}
+		}
+		
+		return -1;
+	}
+
+protected:
+	FlashMemory& flashMemory_;
+
+	int mappingStatus_[MAX_BLOCK_COUNT];
+	int physicalStatus_[MAX_BLOCK_COUNT];
+	int eraseStatus_[MAX_BLOCK_COUNT];
+	int freeBlockCount_ = MAX_BLOCK_COUNT;
+};
+
+
+
+#define W 1 // Write(쓰기)
+#define M 2 // Modify(수정)
+#define R 3 // Read(읽기)
+#define D 4 // Delete(삭제)
+
+
+/**
+ * Request
+ * 요청 입력 데이터 구조
+ *
+struct Request {
+	int operation;  // W, M, R, D 중 하나 
+	int block;
+	int length;
+};
+*/
+
+
+
+/* [문제 1. 작성 내용] */
+// 테스트 케이스를 아래 배열에 추가하시오. (배열의 이름을 임의로 수정하는 경우 채점시 오답 처리됨)
+// 각 테스트 케이스의 형식: { 입력 요청 값 1, 입력 요청 값 2, ... , 입력 요청 값 N }
+
+// 테스트 케이스 예) : 문제에서 설명한 동작 예제
+// 요청이 {W,0,6}, {D,3,2}, {M,1,2} ,{R,0,3} 순으로 입력되는 경우
+std::vector<Request> sampleInput_reqs = { {W,0,6}, {D,3,2}, {M,1,2} ,{R,0,3} };
+
+//TODO: 문제1.(1-1) - 최종적으로 비어 있는 물리 블록이 0개가 되는 상황
+std::vector<Request> test_1_1_reqs = { {W,0,6}, {D,3,2}, {M,1,2}, {R,0,3}, {W,3,2}, {W,6,2} };
+
+//TODO: 문제1.(1-2) - 최종적으로 비어 있는 물리 블록이 4개이고, 0번 ~ 3번 물리 블록이 비어 있는 상황
+std::vector<Request> test_1_2_reqs = { {W,0,6}, {D,3,2}, {M,1,2}, {R,0,3}, {W,3,2}, {W,6,2}, {D,0,2}, {D,3,2} };
+
+//TODO: 문제1.(1-3) - 최종적으로 물리 블록의 지운 회수가 모두 2가 되는 상황
+std::vector<Request> test_1_3_reqs = { {W,0,6}, {D,3,2}, {M,1,2}, {R,0,3}, {W,3,2}, {W,6,2}, {D,0,1}, {W,0,1}, {D,5,3}, {W,5,3} };
+
+//TODO: 문제1. (1-4) - FTL의 모듈 코드에 대해서 statement coverage 100%가 만족되는 요청 입력
+std::vector<Request> test_1_4_reqs = {  {R,7,1}, {D,7,1}, {M,0,5}, {W,0,8}, {W,0,6}, {D,0,8}, {W,0,4}, {M,0,2}, {W,4,4}, {M,0,4}, {D,0,4},
+										{W,0,6}, {D,3,2}, {M,1,2} ,{R,0,3} };
+
+// [문제2. 작성 내용]
+// NOTE: 답안 코드 실행 중 메모리 누수나 런타임 에러가 발생하면 오답 처리됨
+
+namespace my
+{
+	struct FlashMemorySpy : FlashMemory {
+		virtual bool read(int block) override {
+			lastReadBlock_ = block;
+			return true;
+		}
+		virtual bool write(int) override { return false; }
+		virtual bool erase(int) override { return false; }
+
+		int lastReadBlock_ = -1;
+	};
+}
+
+void test_2_1()
+{
+	// TODO: // 문제2.(2-1)
+	// 요청이 다음의 순서대로 발생하는 상황: W,1,4 -> R,2,2 -> M,4,1 -> D,1,1
+	my::FlashMemorySpy spy;
+	FTL ftl(spy);
+	ftl.writeBlock(1, 4);
+	ftl.readBlock(2, 2);
+	ftl.modifyBlock(4, 1);
+	ftl.deleteBlock(1, 1);
+}
+
+void test_2_2()
+{
+	// TODO: 문제2.(2-2) 
+	// 요청이 다음의 순서대로 발생하는 상황: W,0,8 -> D,6,2 -> M,4,2 -> R,2,2 -> D,2,2
+	my::FlashMemorySpy spy;
+	FTL ftl(spy);
+	ftl.writeBlock(0, 8);
+	ftl.deleteBlock(6, 2);
+	ftl.modifyBlock(4, 2);
+	ftl.readBlock(2, 2);
+	ftl.deleteBlock(2, 2);
+}
+
+
+
+// [문제3. 작성 내용]
+/**
+ * FTLExt class
+ * 논리 블록에 대한 요청을 받아 처리 (테스트 대상)
+ */
+class FTLExt
+{
+public:
+	/**
+	 * FTLExt 모듈을 초기화
+	 * @param flashMemory 플래시 메모리의 물리 블록에 동작을 지시하는 제어 인터페이스
+	 */
+	FTLExt(FlashMemory& flashMemory) : flashMemory_(flashMemory) {
+		resetStatus();
+	}
+
+	void resetStatus()
+	{
+		for (int i = 0; i < MAX_BLOCK_COUNT; i++) {
+			mappingStatus_[i] = -1;
+			physicalStatus_[i] = 0;
+			eraseStatus_[i] = 0;
+		}
+		freeBlockCount_ = MAX_BLOCK_COUNT;
+	}
+
+	/**
+	 * 요청한 논리 블록에 쓰기 동작을 수행
+	 * @param start 쓰기 동작을 시작할 논리 블록 번호
+	 * @param length 쓰기 동작을 수행할 블록 갯수
+	 */
+	bool writeBlock(int start, int length)
+	{
+		if (!hasFreeLogicalBlock(start, length))
+			return false;
+
+		int firstFreeBlock = findFreePhysicalBlock(length);
+		if (firstFreeBlock < 0)
+			return false;
+
+		int block = firstFreeBlock;
+		for (int i = start; i < start + length; i++) {
+			eraseStatus_[block]++;
+			mappingStatus_[i] = block;
+			physicalStatus_[block] = 1;
+			block++;
+		}
+
+		freeBlockCount_ -= length;
+		
+		for (int i = 0; i < length; ++i) {
+			flashMemory_.erase(mappingStatus_[start + i]);
+			flashMemory_.write(mappingStatus_[start + i]);
+		}
+
+		return true;
+	}
+
+	/**
+	 * 요청한 논리 블록을 수정하는 동작을 수행
+	 * @param start 수정 동작을 시작할 논리 블록 번호
+	 * @param length 수정 동작을 수행할 블록 갯수
+	 */
+	bool modifyBlock(int start, int length)
+	{
+		if (!isUsedLogicalBlock(start, length))
+			return false;
+
+		int firstFreeBlock = findFreePhysicalBlock(length);
+		if (firstFreeBlock < 0)
+			return false;
+
+		int block = firstFreeBlock;
+		for (int i = start; i < start + length; i++) {
+			eraseStatus_[block]++;
+			physicalStatus_[mappingStatus_[i]] = 0;
+			mappingStatus_[i] = block;
+			physicalStatus_[block] = 1;
+			block++;
+		}
+
+		for (int i = 0; i < length; ++i) {
+			flashMemory_.erase(mappingStatus_[start + i]);
+			flashMemory_.write(mappingStatus_[start + i]);
+		}
+		
+		return true;
+	}
+
+	/**
+	 * 요청한 논리 블록의 내용을 읽어오는 동작을 수행
+	 * @param start 읽기 동작을 시작할 논리 블록 번호
+	 * @param length 읽기 동작을 수행할 블록 갯수
+	 */
+	bool readBlock(int start, int length)
+	{
+		if (!isUsedLogicalBlock(start, length))
+			return false;
+
+		for (int i = 0; i < length; ++i) {
+			flashMemory_.read(mappingStatus_[start + i]);
+		}
+
+		return true;
+	}
+
+	/**
+	 * 사용하지 않을 논리 블록을 해제
+	 * @param start 삭제 동작을 시작할 논리 블록 번호
+	 * @param length 삭제 동작을 수행할 블록 갯수
+	 */
+	bool deleteBlock(int start, int length)
+	{
+		if (!isUsedLogicalBlock(start, length))
+			return false;
+
+		for (int i = start; i < start + length; i++) {
+			physicalStatus_[mappingStatus_[i]] = 0;
+			mappingStatus_[i] = -1;
+		}
+		freeBlockCount_ += length;
+
+		return true;
+	}
+
+private:
+	bool isUsedLogicalBlock(int start, int count)
+	{
+		for (int i = start; i < start + count; i++) {
+			if (mappingStatus_[i] == -1) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	// start 부터 count 개의 논리 블록이 모두 비어 있으면 true
+	bool hasFreeLogicalBlock(int start, int count)
+	{
+		for (int i = start; i < start + count; i++) {
+			if (mappingStatus_[i] != -1) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+#if 0 /* 수정 전 */
+	// count 개의 연속된 비어 있는 물리 블록을 앞에서부터 검색하여 찾으면 시작하는 물리 블록을 반환, 못 찾으면 -1을 반환
+	int findFreePhysicalBlock(int count)
+	{
+		for (int i = 0; i <= MAX_BLOCK_COUNT - count; i++) {
+			int j = 0;
+			for (j = i; j < i + count; j++) {
+				if (physicalStatus_[j] == 1) break;
+			}
+			if (j == i + count) {
+				return i;
+			}
+		}
+
+		return -1;
+	}
+#else /* 수정 후 */
+	int calSum(int *p, int start, int count)
+	{
+		int sum = 0;
+		for (int i = start; i < start + count; i++) {
+			sum += p[i];
+		}
+		return sum;
+	}
+
+	// Wear-Leveling을 적용
+	int findFreePhysicalBlock(int count)
+	{
+		int i, j;
+		int found = 0, sum, min_sum = 0x7fffffff, min_block = -1;
+		for (i = 0; i <= MAX_BLOCK_COUNT - count; i++) {
+			for (j = i; j < i + count; j++) {
+				if (physicalStatus_[j] == 1) break;
+			}
+			if (j == i + count) {
+				sum = calSum(eraseStatus_, i, count);
+				if (sum < min_sum) {
+					found = 1;
+					min_sum = sum;
+					min_block = i;
+				}
+			}
+		}
+		if (found) {
+			return min_block;
+		}
+		return -1;
+	}
+#endif
+
+protected:
+	FlashMemory& flashMemory_;
+
+	int mappingStatus_[MAX_BLOCK_COUNT];
+	int physicalStatus_[MAX_BLOCK_COUNT];
+	int eraseStatus_[MAX_BLOCK_COUNT];
+	int freeBlockCount_ = MAX_BLOCK_COUNT;
+};
+
+
+// 참고용으로 실행하고 싶은 코드가 있다면 아래 main()에 작성하여 활용할 수 있다.
+// main 함수의 코드는 채점과 관련이 없다.
+int main()
+{
+	printTestInputResult("Sample Input", sampleInput_reqs);
+	printTestInputResult("Test_1_1 Input", test_1_1_reqs);
+	printTestInputResult("Test_1_2 Input", test_1_2_reqs);
+	printTestInputResult("Test_1_3 Input", test_1_3_reqs);
+
+	test_2_1();
+	test_2_2();
+
+
+
+	return 0;
+}
+
+
+#include <cstdio>
+#include <cstring>
+#include <locale>
+#include <vector>
+#include "./lib/LabelPrinter.h"
+
+// �뀒�뒪�듃 �?�긽�? �븘�옒 二쇱꽍怨� 媛숈씠 援ы쁽�릺�뼱 �엳�떎. 
+// �븘�슂�븳 寃쎌슦 �븘�옒 二쇱꽍�쓽 �궡�슜�쓣 李멸퀬�븯�뿬 �뀒�뒪�듃 �엯�젰怨� �뀒�뒪�듃 肄붾뱶瑜� �옉�꽦�븯�떆�삤. 
+// NOTE: �뀒�뒪�듃 �?�긽 肄붾뱶�뒗 鍮뚮뱶�뿉 �씠誘� �룷�븿�릺�뼱 �엳�쑝�땲 �븘�옒 二쇱꽍�쓣 �빐�젣�븯�뿬 �궗�슜�븯吏� 留덉떆�삤.
+
+/**
+ * Input class
+ * �엯�젰�맂 �궎 �궡�슜�쓣 媛��졇�삱 �닔 �엳�뒗 �옣移� �씤�꽣�럹�씠�뒪
+ *
+class Input
+{
+public:
+	/**
+	 * �엯�젰�맂 �궎 �궡�슜�쓣 媛��졇�삱 �닔 �엳�뒗 �옣移� �씤�꽣�럹�씠�뒪
+	 * @return �엯�젰�맂 �궎 媛믪쓣 �샇異� �븷 �븣 留덈떎 �븯�굹 �뵫 諛섑솚
+	 *
+	virtual char getKeyInput() = 0;
+};
+*/
+
+/**
+ * LCD�뿉 而ㅼ꽌�? 臾몄옄瑜� �몴�떆�븯�뒗 �씤�꽣�럹�씠�뒪
+ *
+ * @param buffer 異쒕젰�븷 臾몄옄媛� �엳�뒗 踰꾪띁 �쐞移�. 吏��젙�븳 二쇱냼遺��꽣 15�옄瑜� �씫�뼱�꽌 LCD�뿉 �몴�떆�븳�떎. (踰꾪띁�쓽 �쑀�슚�꽦 蹂댁옣 �븘�슂)
+ * @param cursurPosition 而ㅼ꽌瑜� �몴�떆�븷 �쐞移�. 0�씤 寃쎌슦 媛��옣 �쇊履�, 15�씤 寃쎌슦 媛��옣 �삤瑜몄そ 寃쎄퀎�뿉 而ㅼ꽌瑜� �몴�떆�븳�떎. -1�씤 寃쎌슦�뿉�뒗 LCD�뿉 而ㅼ꽌瑜� �몴�떆�븯吏� �븡�뒗�떎. 
+ 
+void writeLcd(char* buffer, int cursurPosition);
+*/
+
+/**
+ * LabelPrinter class
+ * �씪踰� �봽由고꽣瑜� �젣�뼱 (�뀒�뒪�듃 �?�긽)
+ *
+class LabelPrinter
+{
+public:
+	/**
+	 * �씪踰� �봽由고꽣瑜� �젣�뼱�븯�뒗 紐⑤뱢�쓣 珥덇린�솕
+	 * 理쒖큹 LCD�굹 �엯�젰 �긽�깭 �벑�쓣 珥덇린�솕�븯�뒗 濡쒖쭅�씠 �룷�븿�릺�뼱 �엳�떎.
+	 *
+	LabelPrinter(Input& inputDevice) : input_(inputDevice) {}
+
+	/**
+	 * �뀒�뒪�듃 �?�긽�씤 �씪踰� �봽由고꽣 �렪吏묎린�쓽 �엯�젰�쓣 泥섎━�븯怨� 寃곌낵瑜� LCD�뿉 異쒕젰�븳�떎.
+	 *
+	void processInput()
+	{
+		char key = input_.getKeyInput();
+
+		switch (key)
+		{
+		case KEY_LEFT:
+			--cursorPos_;
+			break;
+		case KEY_RIGHT:
+			if (!isalpha(displayBuffer_[cursorPos_]))
+				break;
+			++cursorPos_;
+			break;
+		case KEY_BACKSPACE:
+			for (int i = cursorPos_; i <= strlen(displayBuffer_); ++i)
+				displayBuffer_[i-1] = displayBuffer_[i];
+			--cursorPos_;
+			break;
+		default:
+			for (int i = strlen(displayBuffer_); i >= cursorPos_; --i)
+				displayBuffer_[i+1] = displayBuffer_[i];
+			displayBuffer_[cursorPos_] = key;
+			++cursorPos_;
+			break;
+		}
+
+		writeLcd(displayBuffer_, cursorPos_);
+	}
+
+private:
+	Input& input_;
+	char displayBuffer_[16] = { 0, };
+	int cursorPos_ = 0;
+};
+*/
+
+/*
+�엯�젰 �궎瑜� �젙�쓽�븷 �븣 �궗�슜�븷 �긽�닔.
+
+#define KEY_LEFT    '1'
+#define KEY_RIGHT   '2'
+#deifne KEY_DELETE  '3'
+*/
+
+/* [臾몄젣 1. �옉�꽦 �궡�슜] */
+// �뀒�뒪�듃 耳��씠�뒪瑜� �븘�옒 諛곗뿴�뿉 異붽?�븯�떆�삤. (諛곗뿴�쓽 �씠由꾩쓣 �엫�쓽濡� �닔�젙�븯�뒗 寃쎌슦 梨꾩젏�떆 �삤�떟 泥섎━�맖)
+// 媛� �뀒�뒪�듃 耳��씠�뒪�쓽 �삎�떇: { �엯�젰 媛?닔, �엯�젰 �궎1, �엯�젰 �궎2, ... , �엯�젰 �궎 N }
+
+// �깦�뵆 Testcase : 臾몄젣�쓽 '[ �궎 �엯�젰 �룞�옉�쓽 �삁 ]' 瑜� �뀒�뒪�듃 �븯湲� �쐞�븳 �삁�젣
+// �씪踰� �봽由고꽣�뿉 �엯�젰�븷 �궎 媛믪쓣 �쓽誘� (泥ル쾲吏� �슂�냼�뒗 �씪踰� �봽由고꽣�뿉 �엯�젰�븷 �궎 媛믪쓽 媛쒖닔)
+char sampleInput_keys[MAX_KEY_LIMIT + 1] = { 10,'A','B',KEY_LEFT,'X',KEY_RIGHT,KEY_BACKSPACE,KEY_RIGHT,KEY_LEFT,KEY_LEFT,KEY_BACKSPACE };
+
+//TODO: (臾몄젣1-1) - 理쒖쥌 寃곌낵臾� : ABCDEF
+char test_1_1_keys[MAX_KEY_LIMIT + 1] = { 11, KEY_RIGHT, 'A', 'B', 'C', 'D', 'E', 'F', 'G', KEY_BACKSPACE, KEY_LEFT, KEY_RIGHT };
+
+//TODO: (臾몄젣1-2) - 珥덇린 �긽�깭 : ABCD, 而ㅼ꽌 �쐞移� : B�? C �궗�씠, 理쒖쥌 寃곌낵臾� : PABDOEL
+char test_1_2_keys[MAX_KEY_LIMIT + 1] = { 12, KEY_LEFT, KEY_LEFT,'P', KEY_RIGHT, KEY_RIGHT, KEY_RIGHT, KEY_BACKSPACE, KEY_RIGHT, KEY_RIGHT, 'O', 'E', 'L' };
+
+//TODO: (臾몄젣1-3) - 珥덇린 �긽�깭 : POWER, 而ㅼ꽌 �쐞移� : W�? E �궗�씠, 理쒖쥌 寃곌낵臾� : OOEOL , 理쒖쥌 而ㅼ꽌 �쐞移� : �꽭踰덉㎏ 臾몄옄 'E'�? �꽕踰덉? 臾몄옄'O' �궗�씠
+char test_1_3_keys[MAX_KEY_LIMIT + 1] = { 13, KEY_BACKSPACE, KEY_LEFT, KEY_BACKSPACE, 'O', KEY_RIGHT, KEY_RIGHT, KEY_RIGHT, KEY_RIGHT, KEY_BACKSPACE, 'O', 'L', KEY_LEFT, KEY_LEFT };
+
+
+/* [臾몄젣 2. �옉�꽦 �궡�슜] */
+// NOTE: �떟�븞 肄붾뱶 �떎�뻾 以� 硫붾え由� �늻�닔媛� 諛쒖깮�븯硫� �삤�떟 泥섎━�맖
+
+namespace
+{
+	struct FakeInput : public Input {
+		FakeInput(char* fakeKeys) : fakeKeys_(fakeKeys) {}
+
+		char getKeyInput() {
+			return fakeKeys_[count_++];
+		}
+
+	private:
+		char* fakeKeys_;
+		int count_ = 0;
+	};
+}
+
+void test_2_1(void)
+{
+	// TODO: (臾몄젣2-1)
+	// �궎 �엯�젰�씠 �떎�쓬�쓽 �닚�꽌�?濡� 諛쒖깮�븯�뒗 �긽�솴 - ('A' �쁺臾몄옄 �궎) -(�쇊履� 而ㅼ꽌 �씠�룞�궎) -('P' �쁺臾몄옄 �궎) -(�궘�젣 �궎)
+	char keys[] = { 'A', KEY_LEFT, 'P', KEY_BACKSPACE };
+	
+	FakeInput input(keys);
+	LabelPrinter printer(input);
+
+	for (int i = 0; i < sizeof(keys); ++i)
+		printer.processInput();
+
+}
+
+void test_2_2(void)
+{
+	// TODO: (臾몄젣2-2) 
+	// �궎 �엯�젰�씠 �떎�쓬�쓽 �닚�꽌�?濡� 諛쒖깮�븯�뒗 �긽�솴 - ('L' �쁺臾몄옄 �궎) -('O' �쁺臾몄옄 �궎) - (�쇊履� 而ㅼ꽌 �씠�룞�궎) -(�궘�젣 �궎) -(�삤瑜몄そ 而ㅼ꽌 �씠�룞�궎) -('X'�쁺臾몄옄 �궎)
+	char keys[] = { 'L', 'O', KEY_LEFT, KEY_BACKSPACE, KEY_RIGHT, 'X' };
+
+	FakeInput input(keys);
+	LabelPrinter printer(input);
+
+	for (int i = 0; i < sizeof(keys); ++i)
+		printer.processInput();
+}
+
+
+// (臾몄젣2-3) �떎�쓬怨� 媛숈씠 �젙�쓽�맂 TestCase瑜� �엯�젰 諛쏆븘�꽌 
+// �빐�떦 input�쑝濡� �궎 �엯�젰�씠 諛쒖깮�븯�뒗 �긽�솴�쓣 �옱�쁽�븯怨�, �궎 �엯�젰�씠 �걹�궃 �썑 LCD�뿉 �몴�떆�릺�뒗 寃곌낵瑜� expected�? 鍮꾧탳�븯�뿬 寃�利앺븯�뒗 肄붾뱶瑜� 援ы쁽�븯�씪.
+// �떒, expected�? 媛숈?吏� �솗�씤�븯�뒗 verify API�뒗 諛섎뱶�떆 �븘�옒�쓽 API瑜� �씠�슜�븯�룄濡� �븳�떎.
+
+//void assertEquals(const char* expected, const char* actual);
+
+
+/**
+ * LCD�뿉 而ㅼ꽌�? 臾몄옄瑜� �몴�떆�븯�뒗 �씤�꽣�럹�씠�뒪 writeLcd�뿉 �빐�떦�븯�뒗 dummy
+ */
+
+const char* lastBuffer = "";
+
+void writeLcd(const char* buffer, int cursurPosition)
+{
+	// TODO: (臾몄젣2-3) �븘�슂�븳 test-double spy濡� 媛꾩젒�쟻�쑝濡� LabelPrinter�쓽 寃곌낵瑜� 異붿텧�븷 �닔 �엳�쓬
+	lastBuffer = buffer;
+}
+
+
+using KeySequence = std::vector<char>;
+/**
+ * @param {KeySequence} inputKeys: processInput()�뿉 �엯�젰�맆 �궎媛믩뱾
+ * @param {string} expected: �엯�젰(inputKeys)�뿉 �?�븳, processInput()�쓽 �닔�뻾 寃곌낵 臾몄옄�뿴
+ */
+void test_2_new(const KeySequence& inputKeys, const std::string& expected)
+{
+	// TODO: (臾몄젣2-3)
+	// 二쇱뼱吏� Input(inputKeys)媛믪쑝濡� LabelPrinter瑜� �룞�옉�떆�궎怨�, 洹� 寃곌낵瑜� 二쇱뼱吏� �삁�긽 寃곌낵媛�(expected)怨� 寃�利앺븯�뒗 �뀒�뒪�듃 肄붾뱶瑜� �옉�꽦�븯�씪.
+
+	class FakeInput : public Input
+	{
+	public:
+		FakeInput(decltype(inputKeys) sequence) {
+			k = sequence.begin();
+		}
+
+		char getKeyInput() {
+			return *k++;
+		}
+
+	private:
+		KeySequence::const_iterator k;
+	};
+
+	FakeInput input(inputKeys);
+	LabelPrinter printer(input);
+
+	for (auto key : inputKeys)
+	{
+		printer.processInput();
+	}
+
+	// 理쒖쥌 寃곌낵媛� 寃�利앹? �떎�쓬 �븿�닔(assertEquals)瑜� �넻�빐 �닔�뻾 �븷 �닔 �엳�떎.
+	// assertEquals(expected, actualResult);
+	assertEquals(expected.c_str(), lastBuffer);
+
+	lastBuffer = "";  // teardown
+}
+
+
+
+/* [臾몄젣 3. �옉�꽦 �궡�슜] */
+// 湲곕뒫 �슂援ъ궗�빆 �?濡� 泥섎━�븷 �닔 �뾾�뒗 紐⑤뱺 �삁�쇅 �긽�솴�쓣 �몴�쁽�븯�뒗 �뀒�뒪�듃 耳��씠�뒪瑜� �븘�옒 諛곗뿴�뿉 異붽?�븯�떆�삤. (諛곗뿴�쓽 �씠由꾩쓣 �엫�쓽濡� �닔�젙�븯�뒗 寃쎌슦 梨꾩젏�떆 �삤�떟 泥섎━�맖)
+/* �뀒�뒪�듃 耳��씠�뒪�쓽 �삎�떇:
+{
+	�뀒�뒪�듃 耳��씠�뒪 �닔,
+	{
+		{ �엯�젰 媛?닔, �엯�젰 �궎1, �엯�젰 �궎2, ..., �엯�젰 �궎 N },
+		...
+		{ �엯�젰 媛?닔, �엯�젰 �궎1, �엯�젰 �궎2, ..., �엯�젰 �궎 N }
+	}
+};
+*/
+
+typedef char InputSequence[MAX_KEY_LIMIT];
+
+
+struct ExceptionalCases {
+	int numberOfCases;
+	InputSequence inputKeys[10];
+};
+
+
+// TODO: (臾몄젣3)
+ExceptionalCases test_3_cases = {
+	3,
+	{
+		{1, KEY_BACKSPACE},
+		{1, KEY_LEFT},
+		{16, 'A', 'B', 'C', 'D', 'E',  'F','G', 'H', 'I', 'J',  'K', 'L', 'M', 'N', 'O', 'p' }
+	}
+};
+
+
+/* [臾몄젣 4. �옉�꽦 �궡�슜] */
+/**
+ * LCD �븳 以꾩뿉 而ㅼ꽌�? 臾몄옄瑜� �몴�떆�븯�뒗 �씤�꽣�럹�씠�뒪
+ *
+ * @line 異쒕젰�븷 以� �쐞移�. 0�씠硫� 媛��옣 �쐵以�, 1�씠硫� �몢踰덉㎏ 以꾩뿉 異쒕젰�븳�떎.
+ * @param buffer 異쒕젰�븷 臾몄옄媛� �엳�뒗 踰꾪띁 �쐞移�. 吏��젙�븳 二쇱냼遺��꽣 15�옄瑜� �씫�뼱�꽌 line�뿉 �빐�떦�븯�뒗 以꾩뿉 �몴�떆�븳�떎. (踰꾪띁�쓽 �쑀�슚�꽦 蹂댁옣 �븘�슂).
+				 a-z, A-Z 臾몄옄 媛믪쓣 異쒕젰�븯硫� 0�? 鍮덉뭏�쑝濡� 異쒕젰�븳�떎.
+ * @param cursurPosition 而ㅼ꽌瑜� �몴�떆�븷 �쐞移�. 0�씤 寃쎌슦 line�뿉 �빐�떦�븯�뒗 以꾩쓽 媛��옣 �쇊履�, 15�씤 寃쎌슦 line�뿉 �빐�떦�븯�뒗 以꾩쓽 媛��옣 �삤瑜몄そ 寃쎄퀎�뿉 而ㅼ꽌瑜� �몴�떆�븳�떎. -1�씤 寃쎌슦�뿉�뒗 line�뿉 �빐�떦�븯�뒗 以꾩뿉�뒗 而ㅼ꽌瑜� �몴�떆�븯吏� �븡�뒗�떎.
+
+void writeLine(int line, char* buffer, int cursurPosition);
+
+�궗�슜 �삁
+	writeLine(0, ..., 0); // 泥ル쾲吏� 以� 媛��옣 �쇊履쎌뿉 而ㅼ꽌瑜� �몴�떆
+	writeLine(1, ..., 15); // �몢踰덉㎏ 以� 媛��옣 �삤瑜몄そ�뿉 而ㅼ꽌瑜� �몴�떆
+
+	writeLine(0, ..., -1); writeLine(1, ..., 0); 泥ル쾲吏� 以꾩뿉�뒗 而ㅼ꽌瑜� �몴�떆�븯吏� �븡怨� �몢踰덉㎏ 以� 媛��옣 �쇊履쎌뿉 而ㅼ꽌瑜� �몴�떆	
+*/
+
+// TODO: (臾몄젣4) �슂援ъ궗�빆�쓣 留뚯”�븯�룄濡� �븘�옒 �겢�옒�뒪�쓽 肄붾뱶瑜� �닔�젙�븯�떆�삤.
+class LabelPrinterExt
+{
+public:
+	/**
+	 * �씪踰� �봽由고꽣瑜� �젣�뼱�븯�뒗 紐⑤뱢�쓣 珥덇린�솕
+	 * 理쒖큹 LCD�굹 �엯�젰 �긽�깭 �벑�쓣 珥덇린�솕�븯�뒗 濡쒖쭅�씠 �룷�븿�릺�뼱 �엳�떎.
+	 */
+	LabelPrinterExt(Input& inputDevice) : input_(inputDevice) {}
+
+	/**
+	 * �뀒�뒪�듃 �?�긽�씤 �씪踰� �봽由고꽣 �렪吏묎린�쓽 �엯�젰�쓣 泥섎━�븯怨� 寃곌낵瑜� LCD�뿉 異쒕젰�븳�떎.
+	 * �궎媛� �븯�굹 �엯�젰�맆 �븣 留덈떎 �샇異쒕맂�떎.
+	 */
+	void processInput()
+	{
+		char key = input_.getKeyInput();
+
+		switch (key)
+		{
+		case KEY_LEFT:
+			--cursorPos_;
+			break;
+		case KEY_RIGHT:
+			if (!isalpha(displayBuffer_[cursorPos_]))
+				break;
+			++cursorPos_;
+			break;
+		case KEY_BACKSPACE:
+			for (int i = cursorPos_; i <= strlen(displayBuffer_); ++i)
+				displayBuffer_[i - 1] = displayBuffer_[i];
+			--cursorPos_;
+			break;
+		default:
+			for (int i = strlen(displayBuffer_); i >= cursorPos_; --i)
+				displayBuffer_[i + 1] = displayBuffer_[i];
+			displayBuffer_[cursorPos_] = key;
+			++cursorPos_;
+			break;
+		}
+
+		// TODO: �븘�옒�? 媛숈씠 writeLine瑜� �샇異쒗빐�꽌 LCD濡� 異쒕젰�븳�떎.
+		writeLine(0, displayBuffer_, cursorPos_ < 15 ? cursorPos_ : -1); // �쐵以� 異쒕젰
+		writeLine(1, displayBuffer_+15, cursorPos_ < 15 ? -1 : cursorPos_ - 15); // �븘�옯以� 異쒕젰
+	}
+
+private:
+	Input& input_;
+	char displayBuffer_[31] = { 0, };
+	int cursorPos_ = 0;
+};
+
+
+// 李멸퀬�슜�쑝濡� �떎�뻾�븯怨� �떢�? 肄붾뱶媛� �엳�떎硫� �븘�옒 main()�뿉 �옉�꽦�븯�뿬 �솢�슜�븷 �닔 �엳�떎.
+// main �븿�닔�쓽 肄붾뱶�뒗 梨꾩젏怨� 愿��젴�씠 �뾾�떎.
+int main()
+{
+	printTestInputResult("Sample Input", "", 0, sampleInput_keys);
+
+	printTestInputResult("Test_1_1 Input", "", 0, test_1_1_keys);
+	printTestInputResult("Test_1_2 Input", "ABCD", 2, test_1_2_keys);
+	printTestInputResult("Test_1_3 Input", "POWER", 3, test_1_3_keys);
+
+	test_2_1();
+	test_2_2();
+
+	return 0;
+}
