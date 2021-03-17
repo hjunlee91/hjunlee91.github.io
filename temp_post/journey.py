@@ -1,29 +1,34 @@
 import sys
 from collections import deque
 
-def bfs(init, tickets):
+def bfs(v_index, tickets):
     q = deque()
-    p = init
-    v = [init]
-    b = len(tickets)
-    q.append([init[1], p, v])
+    p = ["ICN"]
+    v = [0] * len(tickets)
+    q.append([v_index, p, v])
     while q:
-        ns, np, nv = q.pop()
-        if len(nv) == b:
+        nv_index, np, nv = q.popleft()
+        nv[nv_index] = 1
+        prev = tickets[nv_index]
+        if np[-1] != prev[0]:
+            continue
+        np.append(prev[1])
+        if nv == ([1] * len(tickets)):
             return np
-        for ticket in tickets:
-            if not ticket in nv:
-                if ns == ticket[0]:
-                    np.append(ticket[1])
-                    nv.append(ticket)
-                    q.append([ticket[1], np, nv])
-                    #print(ticket, path, nv)
+        for i in range(len(tickets)):
+            if nv[i] != 1:
+                if tickets[i][0] == prev[1]:
+                    q.append([i, np, nv])
+                    print(i, np, nv, q)
+                    #print(tickets[i], ns, nv, np, i)
     return -1
 def solution(tickets):
     answer = []
-    for ticket in tickets:
-        if ticket[0] == "ICN":
-            answer.append(bfs(ticket, tickets))
+    for i in range(len(tickets)):
+        if tickets[i][0] == "ICN":
+            answer.append(bfs(i, tickets))
+    while -1 in answer:
+        answer.remove(-1)
     answer = sorted(answer)
-    #print(answer[0])
+    print(answer)
     return answer[0]
